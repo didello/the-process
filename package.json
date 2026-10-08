@@ -1,0 +1,33 @@
+{
+  "name": "the-process",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "oxlint",
+    "preview": "vite preview",
+    "icons": "node scripts/make-icons.mjs",
+    "format": "prettier --write src scripts"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.117.3",
+    "exceljs": "^4.4.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.3",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.7",
+    "@vitejs/plugin-react": "^6.1.1",
+    "oxlint": "^1.81.0",
+    "prettier": "^3.9.9",
+    "sharp": "^0.35.5",
+    "typescript": "~6.0.2",
+    "vite": "^8.3.0",
+    "vite-plugin-pwa": "^2.0.0"
+  },
+  "description": "The Process: seguimiento diario para la revisión semanal con el entrenador."
+}

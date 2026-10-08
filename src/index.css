@@ -1,0 +1,483 @@
+:root {
+  --fondo: #0b0b0c;
+  --superficie: #161618;
+  --superficie-2: #1f1f22;
+  --borde: #2c2c30;
+  --texto: #f3efe6;
+  --texto-suave: #a39e94;
+  --oro: #d4af37;
+  --oro-suave: #d4af3722;
+  --bien: #3fae6e;
+  --bien-fondo: #3fae6e40;
+  --mal: #e0524f;
+  --mal-fondo: #e0524f40;
+  --neutro: #d4af37;
+  --neutro-fondo: #d4af3738;
+  --radio: 14px;
+  color-scheme: dark;
+  font-family:
+    "Inter",
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
+  color: var(--texto);
+  background: var(--fondo);
+  -webkit-tap-highlight-color: transparent;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--fondo);
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+input,
+textarea {
+  font: inherit;
+  color: var(--texto);
+  background: var(--superficie-2);
+  border: 1px solid var(--borde);
+  border-radius: 10px;
+  padding: 12px 14px;
+  width: 100%;
+  outline: none;
+}
+
+input:focus,
+textarea:focus {
+  border-color: var(--oro);
+}
+
+textarea {
+  resize: vertical;
+  line-height: 1.45;
+}
+
+/* ---------- Estructura ---------- */
+
+.app {
+  max-width: 640px;
+  margin: 0 auto;
+  min-height: 100dvh;
+  padding-bottom: calc(76px + env(safe-area-inset-bottom));
+}
+
+.fija {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: color-mix(in srgb, var(--fondo) 90%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--borde);
+  margin-bottom: 14px;
+}
+
+.cabecera {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: calc(10px + env(safe-area-inset-top)) 16px 6px;
+}
+
+.marca-mini {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  margin-right: auto;
+}
+
+.marca-logo {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  border: 1.5px solid var(--oro);
+  color: var(--oro);
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+}
+
+.estado {
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+.estado.error {
+  color: var(--mal);
+}
+
+.error {
+  margin: 0 16px 8px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--mal-fondo);
+  color: #ffb4b2;
+  font-size: 14px;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.contenido {
+  padding: 0 16px;
+}
+
+.cargando {
+  text-align: center;
+  color: var(--texto-suave);
+  padding: 48px 0;
+}
+
+.tarjeta {
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+}
+
+/* ---------- Semana y días ---------- */
+
+.semana-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+}
+
+.flecha {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--borde);
+  background: var(--superficie);
+  font-size: 22px;
+  line-height: 1;
+}
+
+.tira-dias {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  padding: 8px 16px 10px;
+}
+
+.dia-btn {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 8px 0;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  background: none;
+}
+.dia-btn.sel {
+  background: var(--superficie);
+  border-color: var(--oro);
+}
+.dia-letra {
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+.dia-btn.hoy .dia-letra {
+  color: var(--oro);
+  font-weight: 700;
+}
+
+/* Anillo de progreso: cuánto del día está relleno */
+.dia-num {
+  --pct: 0;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-weight: 600;
+  font-size: 14px;
+  background:
+    radial-gradient(closest-side, var(--fondo) 80%, transparent 81%),
+    conic-gradient(var(--oro) calc(var(--pct) * 1turn), var(--superficie-2) 0);
+}
+.dia-btn.sel .dia-num {
+  background:
+    radial-gradient(closest-side, var(--superficie) 80%, transparent 81%),
+    conic-gradient(var(--oro) calc(var(--pct) * 1turn), var(--superficie-2) 0);
+}
+
+.titulo-dia {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 20px;
+  margin: 0 0 14px;
+}
+.titulo-dia small {
+  font-size: 14px;
+  color: var(--oro);
+  font-weight: 600;
+}
+
+/* ---------- Formulario del día ---------- */
+
+.editor {
+  display: grid;
+  gap: 12px;
+}
+
+.campo {
+  padding: 14px;
+}
+.campo h3 {
+  margin: 0 0 12px;
+  font-size: 15px;
+  font-weight: 600;
+}
+.campo h3 small {
+  color: var(--texto-suave);
+  font-weight: 400;
+}
+
+.opciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  min-height: 42px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--borde);
+  background: var(--superficie-2);
+  font-size: 15px;
+  transition:
+    transform 0.08s,
+    background 0.15s,
+    border-color 0.15s;
+}
+.chip:active {
+  transform: scale(0.95);
+}
+.chip.activa {
+  font-weight: 700;
+}
+.chip.activa.bien {
+  background: var(--bien-fondo);
+  border-color: var(--bien);
+  color: #8fe0b0;
+}
+.chip.activa.mal {
+  background: var(--mal-fondo);
+  border-color: var(--mal);
+  color: #ffaaa8;
+}
+.chip.activa.neutro {
+  background: var(--neutro-fondo);
+  border-color: var(--oro);
+  color: var(--oro);
+}
+
+.peso {
+  max-width: 160px;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+/* ---------- Botones ---------- */
+
+.boton {
+  min-height: 50px;
+  padding: 12px 18px;
+  border-radius: 12px;
+  font-weight: 700;
+  border: 1px solid var(--borde);
+}
+.boton.principal {
+  background: var(--oro);
+  color: #141210;
+  border-color: var(--oro);
+}
+.boton.secundario {
+  background: var(--superficie);
+}
+.boton:disabled {
+  opacity: 0.6;
+}
+.ancho {
+  width: 100%;
+  margin: 14px 0 6px;
+}
+
+.enlace {
+  background: none;
+  border: none;
+  padding: 4px;
+  color: var(--oro);
+  font-size: 14px;
+}
+
+/* ---------- Resumen semanal ---------- */
+
+.semana {
+  display: grid;
+  gap: 12px;
+}
+
+.tabla-scroll {
+  overflow-x: auto;
+}
+
+.tabla {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 3px;
+  font-size: 12px;
+  padding: 6px;
+}
+.tabla thead th {
+  font-size: 13px;
+}
+.tabla thead th.hoy .enlace {
+  font-weight: 800;
+  text-decoration: underline;
+}
+.tabla tbody th {
+  text-align: left;
+  font-weight: 500;
+  white-space: nowrap;
+  padding-right: 6px;
+}
+.celda {
+  text-align: center;
+  padding: 7px 2px;
+  border-radius: 6px;
+  min-width: 40px;
+  cursor: pointer;
+  font-size: 11px;
+  line-height: 1.2;
+}
+.celda.vacia {
+  color: var(--texto-suave);
+  background: var(--superficie-2);
+}
+.celda.bien {
+  background: var(--bien-fondo);
+  color: #8fe0b0;
+}
+.celda.mal {
+  background: var(--mal-fondo);
+  color: #ffaaa8;
+}
+.celda.neutro {
+  background: var(--neutro-fondo);
+  color: var(--oro);
+}
+
+@media (max-width: 480px) {
+  .tabla-etiqueta {
+    display: none;
+  }
+}
+
+.media {
+  margin: 0;
+  color: var(--texto-suave);
+  font-size: 14px;
+}
+.media strong {
+  color: var(--texto);
+}
+
+/* ---------- Pestañas inferiores ---------- */
+
+.pestanas {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 5;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px calc(8px + env(safe-area-inset-bottom));
+  background: color-mix(in srgb, var(--superficie) 92%, transparent);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid var(--borde);
+}
+.pestanas button {
+  flex: 1;
+  max-width: 300px;
+  min-height: 48px;
+  border-radius: 12px;
+  border: none;
+  background: none;
+  color: var(--texto-suave);
+  font-weight: 600;
+}
+.pestanas button.activa {
+  background: var(--oro-suave);
+  color: var(--oro);
+}
+
+/* ---------- Acceso ---------- */
+
+.acceso {
+  min-height: 100dvh;
+  display: grid;
+  align-content: center;
+  gap: 28px;
+  padding: 24px 16px;
+  max-width: 420px;
+  margin: 0 auto;
+}
+.marca {
+  text-align: center;
+}
+.marca .marca-logo {
+  width: 64px;
+  height: 64px;
+  font-size: 24px;
+  border-radius: 18px;
+}
+.marca h1 {
+  margin: 14px 0 4px;
+  font-size: 30px;
+  letter-spacing: 0.02em;
+}
+.marca p {
+  margin: 0;
+  color: var(--oro);
+  font-style: italic;
+}
+.acceso-form {
+  display: grid;
+  gap: 12px;
+  padding: 20px;
+}
+.acceso-form h2 {
+  margin: 0 0 4px;
+  font-size: 18px;
+}
+.aviso {
+  margin: 0;
+  font-size: 14px;
+  color: var(--texto-suave);
+}
+.acceso-enlaces {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
