@@ -28,6 +28,11 @@ create table if not exists public.semanas (
   primary key (user_id, inicio)
 );
 
+-- Acceso por la Data API solo para usuarios con sesión iniciada (el proyecto no
+-- expone las tablas nuevas automáticamente). Los anónimos no tienen acceso.
+revoke all on public.dias, public.semanas from anon;
+grant select, insert, update, delete on public.dias, public.semanas to authenticated;
+
 -- Cada persona solo ve y toca sus propios datos.
 alter table public.dias enable row level security;
 alter table public.semanas enable row level security;
