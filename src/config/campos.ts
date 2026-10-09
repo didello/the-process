@@ -110,18 +110,13 @@ export const CAMPOS: Campo[] = [
 const ORDEN_APP: CampoId[] = ["descanso", "entrenamiento", "dieta", "picoteo", "comidas_libres", "agua", "bano", "menstruacion", "pasos"];
 export const CAMPOS_APP = ORDEN_APP.map((id) => CAMPOS.find((c) => c.id === id)!);
 
-/** Campos que cuentan para "día completo" (los opcionales no). */
-export const CAMPOS_OBLIGATORIOS = CAMPOS.filter((c) => !c.opcional);
+/**
+ * Campos que hay que informar cada día. Lo que importa es rellenarlos, no la
+ * respuesta: con los 5 rellenos el anillo del calendario se pone verde.
+ */
+export const CAMPOS_CLAVE = (["entrenamiento", "dieta", "picoteo", "agua", "pasos"] as CampoId[]).map((id) => CAMPOS.find((c) => c.id === id)!);
 
-/** Objetivos que deciden si el día se cumplió (anillo verde o rojo en el calendario). */
-const CLAVE: CampoId[] = ["entrenamiento", "dieta", "picoteo", "agua", "pasos"];
-
-/** null mientras falte alguno por rellenar; si no, si todos están en verde. */
-export function cumplimiento(dia: Partial<Record<CampoId, string | null>> | undefined): "cumplido" | "fallado" | null {
-  const campos = CLAVE.map((id) => CAMPOS.find((c) => c.id === id)!);
-  if (campos.some((c) => !dia?.[c.id])) return null;
-  return campos.every((c) => tonoDe(c, dia![c.id]) === "bien") ? "cumplido" : "fallado";
-}
+export const informados = (dia: Partial<Record<CampoId, string | null>> | undefined) => CAMPOS_CLAVE.filter((c) => dia?.[c.id]).length;
 
 export function tonoDe(campo: Campo, valor: string | null | undefined): Tono | undefined {
   return campo.opciones.find((o) => o.valor === valor)?.tono;

@@ -1,7 +1,7 @@
 // Pantalla principal: selector de semana/día, formulario del día y resumen semanal.
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { CAMPOS, CAMPOS_OBLIGATORIOS, cumplimiento, type CampoId } from "../config/campos";
+import { CAMPOS, CAMPOS_CLAVE, informados, type CampoId } from "../config/campos";
 import { exportarSemana } from "../lib/exportar";
 import { DIAS_CORTOS, diasDeSemana, fechaLarga, hoy, lunesDe, parseISO, rangoSemana, sumarDias } from "../lib/fechas";
 import type { Dia, Semana, Store } from "../lib/store";
@@ -16,7 +16,11 @@ interface Props {
   onSalir?: () => void;
 }
 
-const completados = (dia: Dia | undefined) => CAMPOS_OBLIGATORIOS.filter((c) => dia?.[c.id]).length;
+/** Verde: los campos clave están informados. Rojo: es un día pasado y falta alguno. */
+function estadoAnillo(fecha: string, dia: Dia | undefined) {
+  if (informados(dia) === CAMPOS_CLAVE.length) return "cumplido";
+  return fecha < hoy() ? "fallado" : "";
+}
 
 export function Diario({ store, local, onSalir }: Props) {
   const [fecha, setFecha] = useState(hoy());
@@ -121,7 +125,7 @@ export function Diario({ store, local, onSalir }: Props) {
 
   const dias = diasDeSemana(lunes);
   const dia = semana?.dias[fecha] ?? {};
-  const hechos = completados(semana?.dias[fecha]);
+  const hechos = informados(semana?.dias[fecha]);
 
   return (
     <div className="app">
@@ -162,8 +166,7 @@ export function Diario({ store, local, onSalir }: Props) {
 
         <div className="tira-dias">
           {dias.map((f, i) => {
-            const n = completados(semana?.dias[f]);
-            const pct = n / CAMPOS_OBLIGATORIOS.length;
+            const pct = informados(semana?.dias[f]) / CAMPOS_CLAVE.length;
             return (
               <button
                 key={f}
@@ -174,7 +177,7 @@ export function Diario({ store, local, onSalir }: Props) {
                 }}
               >
                 <span className="dia-letra">{DIAS_CORTOS[i]}</span>
-                <span className={`dia-num ${cumplimiento(semana?.dias[f]) ?? ""}`} style={{ ["--pct" as string]: pct }}>
+                <span className={`dia-num ${estadoAnillo(f, semana?.dias[f])}`} style={{ ["--pct" as string]: pct }}>
                   {parseISO(f).getDate()}
                 </span>
               </button>
@@ -191,7 +194,7 @@ export function Diario({ store, local, onSalir }: Props) {
             <h2 className="titulo-dia">
               {fechaLarga(fecha)}
               <small>
-                {hechos}/{CAMPOS_OBLIGATORIOS.length}
+                {hechos}/{CAMPOS_CLAVE.length}
               </small>
             </h2>
             <DiaEditor key={fecha} dia={dia} onCampo={onCampo} onPeso={onPeso} onCopiarAnterior={onCopiarAnterior} />
