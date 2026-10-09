@@ -1,7 +1,7 @@
 // Pantalla principal: selector de semana/día, formulario del día y resumen semanal.
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { CAMPOS, CAMPOS_OBLIGATORIOS, type CampoId } from "../config/campos";
+import { CAMPOS, CAMPOS_OBLIGATORIOS, cumplimiento, type CampoId } from "../config/campos";
 import { exportarSemana } from "../lib/exportar";
 import { DIAS_CORTOS, diasDeSemana, fechaLarga, hoy, lunesDe, parseISO, rangoSemana, sumarDias } from "../lib/fechas";
 import type { Dia, Semana, Store } from "../lib/store";
@@ -174,7 +174,7 @@ export function Diario({ store, local, onSalir }: Props) {
                 }}
               >
                 <span className="dia-letra">{DIAS_CORTOS[i]}</span>
-                <span className="dia-num" style={{ ["--pct" as string]: pct }}>
+                <span className={`dia-num ${cumplimiento(semana?.dias[f]) ?? ""}`} style={{ ["--pct" as string]: pct }}>
                   {parseISO(f).getDate()}
                 </span>
               </button>

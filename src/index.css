@@ -223,12 +223,22 @@ textarea {
   font-size: 14px;
   background:
     radial-gradient(closest-side, var(--fondo) 80%, transparent 81%),
-    conic-gradient(var(--oro) calc(var(--pct) * 1turn), var(--superficie-2) 0);
+    conic-gradient(var(--anillo, var(--oro)) calc(var(--pct) * 1turn), var(--superficie-2) 0);
 }
+/* Objetivos clave rellenos: anillo completo en verde (cumplido) o rojo (fallado) */
+.dia-num.cumplido {
+  --pct: 1 !important;
+  --anillo: var(--bien);
+}
+.dia-num.fallado {
+  --pct: 1 !important;
+  --anillo: var(--mal);
+}
+
 .dia-btn.sel .dia-num {
   background:
     radial-gradient(closest-side, var(--superficie) 80%, transparent 81%),
-    conic-gradient(var(--oro) calc(var(--pct) * 1turn), var(--superficie-2) 0);
+    conic-gradient(var(--anillo, var(--oro)) calc(var(--pct) * 1turn), var(--superficie-2) 0);
 }
 
 .titulo-dia {

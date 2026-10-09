@@ -61,12 +61,12 @@ export const CAMPOS: Campo[] = [
       { valor: "1-1,5L", tono: "mal" },
       { valor: "2-2.5L", tono: "bien" },
       { valor: "3-3.5L", tono: "bien" },
-      { valor: "4-4.5L" },
-      { valor: "5-5.5L" },
-      { valor: "6-6.5L" },
-      { valor: "7-7.5L" },
-      { valor: "8-8.5L" },
-      { valor: "9-10L" },
+      { valor: "4-4.5L", tono: "bien" },
+      { valor: "5-5.5L", tono: "bien" },
+      { valor: "6-6.5L", tono: "bien" },
+      { valor: "7-7.5L", tono: "bien" },
+      { valor: "8-8.5L", tono: "bien" },
+      { valor: "9-10L", tono: "bien" },
     ],
   },
   {
@@ -112,6 +112,16 @@ export const CAMPOS_APP = ORDEN_APP.map((id) => CAMPOS.find((c) => c.id === id)!
 
 /** Campos que cuentan para "día completo" (los opcionales no). */
 export const CAMPOS_OBLIGATORIOS = CAMPOS.filter((c) => !c.opcional);
+
+/** Objetivos que deciden si el día se cumplió (anillo verde o rojo en el calendario). */
+const CLAVE: CampoId[] = ["entrenamiento", "dieta", "picoteo", "agua", "pasos"];
+
+/** null mientras falte alguno por rellenar; si no, si todos están en verde. */
+export function cumplimiento(dia: Partial<Record<CampoId, string | null>> | undefined): "cumplido" | "fallado" | null {
+  const campos = CLAVE.map((id) => CAMPOS.find((c) => c.id === id)!);
+  if (campos.some((c) => !dia?.[c.id])) return null;
+  return campos.every((c) => tonoDe(c, dia![c.id]) === "bien") ? "cumplido" : "fallado";
+}
 
 export function tonoDe(campo: Campo, valor: string | null | undefined): Tono | undefined {
   return campo.opciones.find((o) => o.valor === valor)?.tono;
