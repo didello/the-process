@@ -779,3 +779,35 @@ textarea {
   text-align: center;
   background: linear-gradient(transparent, #000000c0);
 }
+
+/* ---------- Menú de cuenta ---------- */
+
+.cuenta {
+  position: relative;
+}
+.menu-fondo {
+  position: fixed;
+  inset: 0;
+  z-index: 9;
+}
+.menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 10;
+  display: grid;
+  min-width: 210px;
+  padding: 6px;
+  box-shadow: 0 12px 30px #000a;
+}
+.menu button {
+  text-align: left;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  background: none;
+  font-size: 15px;
+}
+.menu button:hover {
+  background: var(--superficie-2);
+}

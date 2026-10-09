@@ -20,6 +20,8 @@ export default function App() {
 
   // Vienes del enlace de "restablecer contraseña": primero se cambia.
   const cambiandoContrasena = useSyncExternalStore(recuperacion.escuchar, recuperacion.activa);
+  // O la cambias tú desde el menú Cuenta.
+  const [cambiarDesdeMenu, setCambiarDesdeMenu] = useState(false);
 
   const userId = sesion?.user.id;
   const store = useMemo(() => (supabase && userId ? storeSupabase(supabase, userId) : storeLocal), [userId]);
@@ -29,5 +31,16 @@ export default function App() {
   if (sesion === undefined) return <p className="cargando">Cargando…</p>;
   if (!sesion) return <Acceso sb={supabase} />;
   if (cambiandoContrasena) return <NuevaContrasena sb={supabase} onHecho={recuperacion.terminar} />;
-  return <Diario key={userId} store={store} local={false} fotosApi={fotosApi} onSalir={() => supabase!.auth.signOut()} />;
+  if (cambiarDesdeMenu)
+    return <NuevaContrasena sb={supabase} onHecho={() => setCambiarDesdeMenu(false)} onCancelar={() => setCambiarDesdeMenu(false)} />;
+  return (
+    <Diario
+      key={userId}
+      store={store}
+      local={false}
+      fotosApi={fotosApi}
+      onSalir={() => supabase!.auth.signOut()}
+      onCambiarContrasena={() => setCambiarDesdeMenu(true)}
+    />
+  );
 }

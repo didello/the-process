@@ -16,6 +16,7 @@ interface Props {
   store: Store;
   local: boolean;
   onSalir?: () => void;
+  onCambiarContrasena?: () => void;
   fotosApi: FotosApi | null;
 }
 
@@ -39,7 +40,8 @@ function calcularRacha(dias: Record<string, Dia>) {
 
 const DIAS_RACHA = 730; // hasta dónde miramos hacia atrás para la racha
 
-export function Diario({ store, local, onSalir, fotosApi }: Props) {
+export function Diario({ store, local, onSalir, onCambiarContrasena, fotosApi }: Props) {
+  const [menuCuenta, setMenuCuenta] = useState(false);
   const [fecha, setFecha] = useState(hoy());
   const lunes = lunesDe(fecha);
   // Semana cargada y de qué lunes es (mientras carga otra, no se muestra).
@@ -199,9 +201,26 @@ export function Diario({ store, local, onSalir, fotosApi }: Props) {
             {estado === "guardando" ? "Guardando…" : estado === "error" ? "⚠ Sin guardar" : local ? "Modo local" : "✓ Guardado"}
           </span>
           {onSalir && (
-            <button className="enlace" onClick={onSalir}>
-              Salir
-            </button>
+            <div className="cuenta">
+              <button className="enlace" onClick={() => setMenuCuenta(!menuCuenta)} aria-expanded={menuCuenta}>
+                Cuenta ▾
+              </button>
+              {menuCuenta && (
+                <>
+                  <div className="menu-fondo" onClick={() => setMenuCuenta(false)} />
+                  <div className="menu tarjeta" role="menu">
+                    {onCambiarContrasena && (
+                      <button role="menuitem" onClick={onCambiarContrasena}>
+                        🔑 Cambiar contraseña
+                      </button>
+                    )}
+                    <button role="menuitem" onClick={onSalir}>
+                      ↩ Salir
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           )}
         </header>
 
@@ -237,7 +256,11 @@ export function Diario({ store, local, onSalir, fotosApi }: Props) {
                 }}
               >
                 <span className="dia-letra">{DIAS_CORTOS[i]}</span>
-                {avisoFotos?.proxima === f && <span className="marca-fotos" title="Toca sacar fotos">📷</span>}
+                {avisoFotos?.proxima === f && (
+                  <span className="marca-fotos" title="Toca sacar fotos">
+                    📷
+                  </span>
+                )}
                 <span className={`dia-num ${estadoAnillo(f, semana?.dias[f])}`} style={{ ["--pct" as string]: pct }}>
                   {parseISO(f).getDate()}
                 </span>

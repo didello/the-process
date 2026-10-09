@@ -11,6 +11,10 @@ const MENSAJES: Record<string, string> = {
 
 const traducir = (e: unknown) => {
   const m = (e as Error)?.message ?? "";
+  // Supabase limita los correos (confirmación, recuperar contraseña) a unos pocos por hora.
+  if (/rate limit/i.test(m)) return "Has pedido demasiados correos seguidos. Espera un rato (hasta 1 hora) y vuelve a intentarlo.";
+  const segundos = m.match(/after (d+) seconds?/i);
+  if (segundos) return `Por seguridad, espera ${segundos[1]} segundos antes de volver a intentarlo.`;
   return (
     MENSAJES[m] ?? (/password/i.test(m) ? "La contraseña debe tener al menos 8 caracteres." : m || "Algo ha fallado. Inténtalo otra vez.")
   );

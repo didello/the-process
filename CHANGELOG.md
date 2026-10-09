@@ -4,6 +4,15 @@ Formato: [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) · versione
 
 ## [Sin publicar]
 
+## [1.0.2] - 2026-10-09
+
+### Añadido
+- Menú **Cuenta ▾** en la cabecera con **🔑 Cambiar contraseña** (sin necesidad de correo) y **↩ Salir**.
+
+### Corregido
+- Los errores por límite de correos de Supabase («email rate limit exceeded») ahora salen en español
+  y explican que hay que esperar un rato.
+
 ## [1.0.1] - 2026-10-09
 
 ### Corregido
