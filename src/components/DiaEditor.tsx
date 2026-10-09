@@ -1,7 +1,7 @@
 // Formulario de un día: un bloque por fila de la hoja, con botones grandes.
 
 import { useState } from "react";
-import { CAMPOS, type CampoId } from "../config/campos";
+import { CAMPOS_APP, type CampoId } from "../config/campos";
 import type { Dia } from "../lib/store";
 
 interface Props {
@@ -14,7 +14,14 @@ interface Props {
 export function DiaEditor({ dia, onCampo, onPeso, onCopiarAnterior }: Props) {
   return (
     <div className="editor">
-      {CAMPOS.map((campo) => {
+      <section className="tarjeta campo">
+        <h3>
+          <span aria-hidden>⚖️</span> Peso <small>· kg en ayunas</small>
+        </h3>
+        <CampoPeso valor={dia.peso ?? null} onCambio={onPeso} />
+      </section>
+
+      {CAMPOS_APP.map((campo) => {
         const actual = dia[campo.id] ?? null;
         return (
           <section key={campo.id} className="tarjeta campo">
@@ -42,13 +49,6 @@ export function DiaEditor({ dia, onCampo, onPeso, onCopiarAnterior }: Props) {
           </section>
         );
       })}
-
-      <section className="tarjeta campo">
-        <h3>
-          <span aria-hidden>⚖️</span> Peso <small>· kg en ayunas</small>
-        </h3>
-        <CampoPeso valor={dia.peso ?? null} onCambio={onPeso} />
-      </section>
 
       <button className="boton secundario ancho" onClick={onCopiarAnterior}>
         ↺ Copiar lo del día anterior

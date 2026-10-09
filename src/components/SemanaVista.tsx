@@ -1,7 +1,7 @@
 // Resumen de la semana con el aspecto de la hoja, comentarios y exportación.
 
 import { useEffect, useRef, useState } from "react";
-import { CAMPOS, tonoDe } from "../config/campos";
+import { CAMPOS_APP, tonoDe } from "../config/campos";
 import { DIAS_CORTOS, diasDeSemana, hoy } from "../lib/fechas";
 import type { Semana } from "../lib/store";
 
@@ -36,7 +36,20 @@ export function SemanaVista({ lunes, semana, onComentarios, onExportar, onAbrirD
             </tr>
           </thead>
           <tbody>
-            {CAMPOS.map((c) => (
+            <tr>
+              <th scope="row">
+                <span aria-hidden>⚖️</span> <span className="tabla-etiqueta">Peso</span>
+              </th>
+              {fechas.map((f) => {
+                const p = semana.dias[f]?.peso;
+                return (
+                  <td key={f} className={p != null ? "celda neutro" : "celda vacia"} onClick={() => onAbrirDia(f)}>
+                    {p != null ? String(p).replace(".", ",") : "·"}
+                  </td>
+                );
+              })}
+            </tr>
+            {CAMPOS_APP.map((c) => (
               <tr key={c.id}>
                 <th scope="row" title={c.titulo}>
                   <span aria-hidden>{c.icono}</span> <span className="tabla-etiqueta">{c.titulo}</span>
@@ -52,19 +65,6 @@ export function SemanaVista({ lunes, semana, onComentarios, onExportar, onAbrirD
                 })}
               </tr>
             ))}
-            <tr>
-              <th scope="row">
-                <span aria-hidden>⚖️</span> <span className="tabla-etiqueta">Peso</span>
-              </th>
-              {fechas.map((f) => {
-                const p = semana.dias[f]?.peso;
-                return (
-                  <td key={f} className={p != null ? "celda neutro" : "celda vacia"} onClick={() => onAbrirDia(f)}>
-                    {p != null ? String(p).replace(".", ",") : "·"}
-                  </td>
-                );
-              })}
-            </tr>
           </tbody>
         </table>
       </div>

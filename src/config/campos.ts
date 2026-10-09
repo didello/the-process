@@ -106,6 +106,10 @@ export const CAMPOS: Campo[] = [
   },
 ];
 
+/** Orden en pantalla (el peso va antes que todos). La exportación mantiene el de la hoja. */
+const ORDEN_APP: CampoId[] = ["descanso", "entrenamiento", "dieta", "picoteo", "comidas_libres", "agua", "bano", "menstruacion", "pasos"];
+export const CAMPOS_APP = ORDEN_APP.map((id) => CAMPOS.find((c) => c.id === id)!);
+
 /** Campos que cuentan para "día completo" (los opcionales no). */
 export const CAMPOS_OBLIGATORIOS = CAMPOS.filter((c) => !c.opcional);
 
