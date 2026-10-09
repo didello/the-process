@@ -79,7 +79,11 @@ export function fotosSupabase(sb: SupabaseClient, userId: string): FotosApi {
         await almacen.remove([previa.data.ruta]);
       }
 
-      const { data, error } = await sb.from("fotos").insert({ user_id: userId, fecha, pose, ruta }).select("id, fecha, pose, ruta").single();
+      const { data, error } = await sb
+        .from("fotos")
+        .insert({ user_id: userId, fecha, pose, ruta })
+        .select("id, fecha, pose, ruta")
+        .single();
       if (error) {
         await almacen.remove([ruta]);
         throw error;

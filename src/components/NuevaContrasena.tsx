@@ -3,7 +3,8 @@
 import { useState, type FormEvent } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-export function NuevaContrasena({ sb, onHecho }: { sb: SupabaseClient; onHecho(): void }) {
+/** También sirve para cambiarla estando dentro (con onCancelar para volver a la app). */
+export function NuevaContrasena({ sb, onHecho, onCancelar }: { sb: SupabaseClient; onHecho(): void; onCancelar?: () => void }) {
   const [pass, setPass] = useState("");
   const [repetir, setRepetir] = useState("");
   const [msg, setMsg] = useState("");
@@ -55,6 +56,13 @@ export function NuevaContrasena({ sb, onHecho }: { sb: SupabaseClient; onHecho()
           Guardar contraseña
         </button>
         {msg && <p className="aviso">{msg}</p>}
+        {onCancelar && (
+          <div className="acceso-enlaces">
+            <button type="button" className="enlace" onClick={onCancelar} disabled={ocupado}>
+              Cancelar
+            </button>
+          </div>
+        )}
       </form>
     </main>
   );

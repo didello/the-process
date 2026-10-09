@@ -88,7 +88,10 @@ export function FotosVista({ api, fotos, onCambio, onError, ocultas, onOcultas }
           pixelada={ocultas}
           onCerrar={() => setVisor(null)}
           onBorrar={async () => {
-            if (!confirm(`¿Borrar la foto de ${POSES.find((p) => p.id === visor.pose)!.titulo.toLowerCase()} del ${fechaCorta(visor.fecha)}?`)) return;
+            if (
+              !confirm(`¿Borrar la foto de ${POSES.find((p) => p.id === visor.pose)!.titulo.toLowerCase()} del ${fechaCorta(visor.fecha)}?`)
+            )
+              return;
             try {
               await api.borrar(visor);
               onCambio(fotos.filter((f) => f.id !== visor.id));
@@ -168,7 +171,11 @@ function Visor({
           <p>{comparar ? "Comparando. Toca otra fecha o la misma para quitarla:" : "Comparar con:"}</p>
           <div className="carrusel">
             {otras.map((f) => (
-              <button key={f.id} className={`miniatura peque ${comparar?.id === f.id ? "sel" : ""}`} onClick={() => setComparar(comparar?.id === f.id ? null : f)}>
+              <button
+                key={f.id}
+                className={`miniatura peque ${comparar?.id === f.id ? "sel" : ""}`}
+                onClick={() => setComparar(comparar?.id === f.id ? null : f)}
+              >
                 <Imagen url={f.url} pixelada={pixelada} bloques={8} />
                 <span className="fecha-foto">{fechaCorta(f.fecha)}</span>
               </button>
@@ -259,7 +266,8 @@ function SubirFotos({
       </div>
 
       <button className="boton principal ancho" disabled={!elegidas.length || !!progreso} onClick={guardar}>
-        {progreso ?? (elegidas.length ? `Guardar ${elegidas.length} ${elegidas.length === 1 ? "foto" : "fotos"}` : "Elige al menos una foto")}
+        {progreso ??
+          (elegidas.length ? `Guardar ${elegidas.length} ${elegidas.length === 1 ? "foto" : "fotos"}` : "Elige al menos una foto")}
       </button>
     </div>
   );

@@ -114,7 +114,9 @@ export const CAMPOS_APP = ORDEN_APP.map((id) => CAMPOS.find((c) => c.id === id)!
  * Campos que hay que informar cada día. Lo que importa es rellenarlos, no la
  * respuesta: con los 5 rellenos el anillo del calendario se pone verde.
  */
-export const CAMPOS_CLAVE = (["entrenamiento", "dieta", "picoteo", "agua", "pasos"] as CampoId[]).map((id) => CAMPOS.find((c) => c.id === id)!);
+export const CAMPOS_CLAVE = (["entrenamiento", "dieta", "picoteo", "agua", "pasos"] as CampoId[]).map((id) =>
+  CAMPOS.find((c) => c.id === id)!,
+);
 
 export const informados = (dia: Partial<Record<CampoId, string | null>> | undefined) => CAMPOS_CLAVE.filter((c) => dia?.[c.id]).length;
 
