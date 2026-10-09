@@ -244,9 +244,31 @@ textarea {
 .titulo-dia {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: center;
+  gap: 10px;
   font-size: 20px;
   margin: 0 0 14px;
+}
+.insignias {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+}
+.racha {
+  font-size: 13px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #ff8a3d22;
+  border: 1px solid #ff8a3d66;
+  color: #ffb07a;
+}
+.racha.apagada {
+  background: var(--superficie-2);
+  border-color: var(--borde);
+  color: var(--texto-suave);
+  filter: grayscale(1);
 }
 .titulo-dia small {
   font-size: 14px;

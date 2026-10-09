@@ -22,6 +22,20 @@ function estadoAnillo(fecha: string, dia: Dia | undefined) {
   return fecha < hoy() ? "fallado" : "";
 }
 
+/** Días seguidos con los campos clave informados, contando hacia atrás desde hoy (o desde ayer si hoy aún está a medias). */
+function calcularRacha(dias: Record<string, Dia>) {
+  const completo = (f: string) => informados(dias[f]) === CAMPOS_CLAVE.length;
+  let f = completo(hoy()) ? hoy() : sumarDias(hoy(), -1);
+  let n = 0;
+  while (completo(f)) {
+    n++;
+    f = sumarDias(f, -1);
+  }
+  return n;
+}
+
+const DIAS_RACHA = 730; // hasta dónde miramos hacia atrás para la racha
+
 export function Diario({ store, local, onSalir }: Props) {
   const [fecha, setFecha] = useState(hoy());
   const lunes = lunesDe(fecha);
@@ -32,6 +46,8 @@ export function Diario({ store, local, onSalir }: Props) {
   const [estado, setEstado] = useState<Estado>("listo");
   const [error, setError] = useState("");
   const [exportando, setExportando] = useState(false);
+  // Días recientes (para la racha), se mantiene al día con lo que vas rellenando.
+  const [recientes, setRecientes] = useState<Record<string, Dia>>({});
 
   // Copia al día de la semana cargada, para calcular cambios sin esperar a React.
   const semanaRef = useRef<Semana | null>(null);
@@ -75,11 +91,21 @@ export function Diario({ store, local, onSalir }: Props) {
     };
   }, [store, lunes]);
 
+  useEffect(() => {
+    store
+      .cargarDias(sumarDias(hoy(), -DIAS_RACHA), hoy())
+      .then((d) => setRecientes((previos) => ({ ...d, ...previos })))
+      .catch(() => {
+        /* sin racha si falla: no es crítico */
+      });
+  }, [store]);
+
   function actualizarDia(f: string, cambios: Dia) {
     const s = semanaRef.current;
     if (!s) return;
     const nuevo = { ...s.dias[f], ...cambios };
     fijarSemana(lunes, { ...s, dias: { ...s.dias, [f]: nuevo } });
+    setRecientes((r) => ({ ...r, [f]: nuevo }));
     encolar(() => store.guardarDia(f, nuevo));
   }
 
@@ -126,6 +152,7 @@ export function Diario({ store, local, onSalir }: Props) {
   const dias = diasDeSemana(lunes);
   const dia = semana?.dias[fecha] ?? {};
   const hechos = informados(semana?.dias[fecha]);
+  const racha = calcularRacha(recientes);
 
   return (
     <div className="app">
@@ -193,9 +220,14 @@ export function Diario({ store, local, onSalir }: Props) {
           <>
             <h2 className="titulo-dia">
               {fechaLarga(fecha)}
-              <small>
-                {hechos}/{CAMPOS_CLAVE.length}
-              </small>
+              <span className="insignias">
+                <span className={`racha ${racha ? "" : "apagada"}`} title="Días seguidos apuntando">
+                  🔥 {racha} {racha === 1 ? "día" : "días"}
+                </span>
+                <small>
+                  {hechos}/{CAMPOS_CLAVE.length}
+                </small>
+              </span>
             </h2>
             <DiaEditor key={fecha} dia={dia} onCampo={onCampo} onPeso={onPeso} onCopiarAnterior={onCopiarAnterior} />
           </>

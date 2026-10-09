@@ -15,6 +15,8 @@ export interface Semana {
 export interface Store {
   cargarSemana(lunes: string): Promise<Semana>;
   cargarDia(fecha: string): Promise<Dia>;
+  /** Días con datos entre dos fechas (incluidas), por fecha ISO. */
+  cargarDias(desde: string, hasta: string): Promise<Record<string, Dia>>;
   guardarDia(fecha: string, dia: Dia): Promise<void>;
   guardarComentarios(lunes: string, texto: string): Promise<void>;
 }
@@ -48,6 +50,11 @@ export function storeSupabase(sb: SupabaseClient, userId: string): Store {
       const { data, error } = await sb.from("dias").select("*").eq("fecha", fecha).maybeSingle();
       if (error) throw error;
       return data ? limpiar(data) : {};
+    },
+    async cargarDias(desde, hasta) {
+      const { data, error } = await sb.from("dias").select("*").gte("fecha", desde).lte("fecha", hasta);
+      if (error) throw error;
+      return Object.fromEntries(data.map((fila) => [fila.fecha, limpiar(fila)]));
     },
     async guardarDia(fecha, dia) {
       const { error } = await sb
@@ -99,6 +106,9 @@ export const storeLocal: Store = {
   },
   async cargarDia(fecha) {
     return leer().dias[fecha] ?? {};
+  },
+  async cargarDias(desde, hasta) {
+    return Object.fromEntries(Object.entries(leer().dias).filter(([f]) => f >= desde && f <= hasta));
   },
   async guardarDia(fecha, dia) {
     const datos = leer();
