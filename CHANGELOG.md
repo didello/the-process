@@ -4,6 +4,12 @@ Formato: [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) · versione
 
 ## [Sin publicar]
 
+## [1.0.1] - 2026-10-09
+
+### Corregido
+- Restablecer contraseña: el enlace del correo entraba directamente en la app sin pedir la contraseña
+  nueva. Ahora abre la pantalla **«Nueva contraseña»** (con confirmación) y, al guardarla, entra en la app.
+
 ## [1.0.0] - 2026-10-09
 
 Primera versión publicada.
