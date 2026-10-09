@@ -100,6 +100,19 @@ textarea {
   margin-right: auto;
 }
 
+/* Nombre de la app con estilo de firma */
+.firma {
+  font-family: "Allura", cursive;
+  font-weight: 400;
+  color: var(--oro);
+  letter-spacing: 0;
+  line-height: 1;
+  white-space: nowrap;
+}
+.marca-mini .firma {
+  font-size: 30px;
+}
+
 .marca-logo {
   display: inline-grid;
   place-items: center;
@@ -114,6 +127,7 @@ textarea {
 }
 
 .estado {
+  white-space: nowrap;
   font-size: 12px;
   color: var(--texto-suave);
 }
@@ -453,9 +467,8 @@ textarea {
   border-radius: 18px;
 }
 .marca h1 {
-  margin: 14px 0 4px;
-  font-size: 30px;
-  letter-spacing: 0.02em;
+  margin: 14px 0 8px;
+  font-size: 60px;
 }
 .marca p {
   margin: 0;

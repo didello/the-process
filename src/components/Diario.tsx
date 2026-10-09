@@ -129,7 +129,7 @@ export function Diario({ store, local, onSalir }: Props) {
         <header className="cabecera">
           <div className="marca-mini">
             <span className="marca-logo">TP</span>
-            <span>The Process</span>
+            <span className="firma">The Process</span>
           </div>
           <span className={`estado ${estado}`} title={error}>
             {estado === "guardando" ? "Guardando…" : estado === "error" ? "⚠ Sin guardar" : local ? "Modo local" : "✓ Guardado"}

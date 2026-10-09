@@ -61,7 +61,7 @@ export function Acceso({ sb }: { sb: SupabaseClient }) {
     <main className="acceso">
       <div className="marca">
         <span className="marca-logo">TP</span>
-        <h1>The Process</h1>
+        <h1 className="firma">The Process</h1>
         <p>Recuerda por qué empezaste.</p>
       </div>
       <form className="tarjeta acceso-form" onSubmit={enviar}>
