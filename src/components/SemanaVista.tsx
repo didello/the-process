@@ -1,6 +1,5 @@
 // Resumen de la semana con el aspecto de la hoja, comentarios y exportación.
 
-import { useEffect, useRef, useState } from "react";
 import { CAMPOS_APP, tonoDe } from "../config/campos";
 import { DIAS_CORTOS, diasDeSemana, hoy } from "../lib/fechas";
 import type { Semana } from "../lib/store";
@@ -78,7 +77,7 @@ export function SemanaVista({ lunes, semana, onComentarios, onExportar, onAbrirD
         <h3>
           <span aria-hidden>📝</span> Comentarios para el entrenador
         </h3>
-        <Comentarios key={lunes} inicial={semana.comentarios} onGuardar={onComentarios} />
+        <Comentarios texto={semana.comentarios} onCambio={onComentarios} />
       </section>
 
       <button className="boton principal ancho" onClick={onExportar} disabled={exportando}>
@@ -88,41 +87,13 @@ export function SemanaVista({ lunes, semana, onComentarios, onExportar, onAbrirD
   );
 }
 
-function Comentarios({ inicial, onGuardar }: { inicial: string; onGuardar(t: string): void }) {
-  const [texto, setTexto] = useState(inicial);
-  const pendiente = useRef<string | null>(null);
-  const guardar = useRef(onGuardar);
-  useEffect(() => {
-    guardar.current = onGuardar;
-  });
-
-  // Guardado automático cuando dejas de escribir un momento.
-  useEffect(() => {
-    if (pendiente.current === null) return;
-    const t = setTimeout(() => {
-      guardar.current(texto);
-      pendiente.current = null;
-    }, 800);
-    return () => clearTimeout(t);
-  }, [texto]);
-
-  // Si sales de la pantalla antes de que salte, se guarda igualmente.
-  useEffect(
-    () => () => {
-      if (pendiente.current !== null) guardar.current(pendiente.current);
-    },
-    [],
-  );
-
+function Comentarios({ texto, onCambio }: { texto: string; onCambio(t: string): void }) {
   return (
     <textarea
       rows={7}
       placeholder="Qué tal el entrenamiento, la dieta, ejercicios que quieras mejorar… Cuanto más detalle, mejor."
       value={texto}
-      onChange={(e) => {
-        pendiente.current = e.target.value;
-        setTexto(e.target.value);
-      }}
+      onChange={(e) => onCambio(e.target.value)}
     />
   );
 }

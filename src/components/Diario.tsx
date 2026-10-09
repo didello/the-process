@@ -123,17 +123,33 @@ export function Diario({ store, local, onSalir }: Props) {
     if (Object.keys(cambios).length) actualizarDia(fecha, cambios);
   }
 
+  // Comentarios: en pantalla al instante; en la base de datos cuando dejas de escribir un momento.
+  const comentarioPendiente = useRef<{ lunes: string; texto: string; timer: number } | null>(null);
+
+  const guardarComentarioYa = useCallback(() => {
+    const p = comentarioPendiente.current;
+    if (!p) return;
+    clearTimeout(p.timer);
+    comentarioPendiente.current = null;
+    encolar(() => store.guardarComentarios(p.lunes, p.texto));
+  }, [encolar, store]);
+
   function onComentarios(texto: string) {
     const s = semanaRef.current;
-    const l = lunes;
-    if (s) fijarSemana(l, { ...s, comentarios: texto });
-    encolar(() => store.guardarComentarios(l, texto));
+    if (!s) return;
+    fijarSemana(lunes, { ...s, comentarios: texto });
+    if (comentarioPendiente.current) clearTimeout(comentarioPendiente.current.timer);
+    comentarioPendiente.current = { lunes, texto, timer: window.setTimeout(guardarComentarioYa, 800) };
   }
+
+  // Si cambias de semana o sales de la app, lo pendiente se guarda igualmente.
+  useEffect(() => guardarComentarioYa, [lunes, guardarComentarioYa]);
 
   async function onExportar() {
     if (!semanaRef.current) return;
     setExportando(true);
     try {
+      guardarComentarioYa();
       await cola.current; // que lo último escrito ya esté guardado
       await exportarSemana(lunes, semanaRef.current);
     } catch (e) {
