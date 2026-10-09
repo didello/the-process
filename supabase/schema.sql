@@ -48,3 +48,48 @@ create policy "semanas propias" on public.semanas
   for all to authenticated
   using ((select auth.uid()) = user_id)
   with check ((select auth.uid()) = user_id);
+
+-- ============================================================
+-- Fotos de progreso (v0.2): almacén privado + tabla con fecha y pose.
+-- ============================================================
+
+create table if not exists public.fotos (
+  id         uuid primary key default gen_random_uuid(),
+  user_id    uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  fecha      date not null,
+  pose       text not null check (pose in ('frente', 'perfil_izq', 'perfil_der', 'espalda')),
+  ruta       text not null, -- dentro del almacén "fotos": <user_id>/<archivo>.jpg
+  created_at timestamptz not null default now(),
+  unique (user_id, fecha, pose)
+);
+
+revoke all on public.fotos from anon;
+grant select, insert, update, delete on public.fotos to authenticated;
+alter table public.fotos enable row level security;
+
+drop policy if exists "fotos propias" on public.fotos;
+create policy "fotos propias" on public.fotos
+  for all to authenticated
+  using ((select auth.uid()) = user_id)
+  with check ((select auth.uid()) = user_id);
+
+-- Almacén privado: sin sesión no se puede ver ninguna foto, ni con el enlace.
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('fotos', 'fotos', false, 5242880, array['image/jpeg'])
+on conflict (id) do update set public = false, file_size_limit = 5242880, allowed_mime_types = array['image/jpeg'];
+
+-- Cada persona solo puede tocar su carpeta (<user_id>/...).
+drop policy if exists "fotos: ver las mias" on storage.objects;
+create policy "fotos: ver las mias" on storage.objects
+  for select to authenticated
+  using (bucket_id = 'fotos' and (storage.foldername(name))[1] = (select auth.uid())::text);
+
+drop policy if exists "fotos: subir a mi carpeta" on storage.objects;
+create policy "fotos: subir a mi carpeta" on storage.objects
+  for insert to authenticated
+  with check (bucket_id = 'fotos' and (storage.foldername(name))[1] = (select auth.uid())::text);
+
+drop policy if exists "fotos: borrar las mias" on storage.objects;
+create policy "fotos: borrar las mias" on storage.objects
+  for delete to authenticated
+  using (bucket_id = 'fotos' and (storage.foldername(name))[1] = (select auth.uid())::text);

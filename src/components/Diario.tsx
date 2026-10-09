@@ -3,9 +3,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { CAMPOS, CAMPOS_CLAVE, informados, type CampoId } from "../config/campos";
 import { exportarSemana } from "../lib/exportar";
-import { DIAS_CORTOS, diasDeSemana, fechaLarga, hoy, lunesDe, parseISO, rangoSemana, sumarDias } from "../lib/fechas";
+import { DIAS_CORTOS, diasDeSemana, fechaCorta, fechaLarga, hoy, lunesDe, parseISO, rangoSemana, sumarDias } from "../lib/fechas";
 import type { Dia, Semana, Store } from "../lib/store";
+import { recordatorioFotos, type Foto, type FotosApi } from "../lib/fotos";
 import { DiaEditor } from "./DiaEditor";
+import { FotosVista } from "./FotosVista";
 import { SemanaVista } from "./SemanaVista";
 
 type Estado = "listo" | "guardando" | "error";
@@ -14,6 +16,7 @@ interface Props {
   store: Store;
   local: boolean;
   onSalir?: () => void;
+  fotosApi: FotosApi | null;
 }
 
 /** Verde: los campos clave están informados. Rojo: es un día pasado y falta alguno. */
@@ -36,13 +39,15 @@ function calcularRacha(dias: Record<string, Dia>) {
 
 const DIAS_RACHA = 730; // hasta dónde miramos hacia atrás para la racha
 
-export function Diario({ store, local, onSalir }: Props) {
+export function Diario({ store, local, onSalir, fotosApi }: Props) {
   const [fecha, setFecha] = useState(hoy());
   const lunes = lunesDe(fecha);
   // Semana cargada y de qué lunes es (mientras carga otra, no se muestra).
   const [cargada, setCargada] = useState<{ lunes: string; semana: Semana } | null>(null);
   const semana = cargada?.lunes === lunes ? cargada.semana : null;
-  const [vista, setVista] = useState<"dia" | "semana">("dia");
+  const [vista, setVista] = useState<"dia" | "semana" | "fotos">("dia");
+  const [fotos, setFotos] = useState<Foto[] | null>(null);
+  const [fotosOcultas, setFotosOcultas] = useState(true); // pixeladas por defecto (privacidad)
   const [estado, setEstado] = useState<Estado>("listo");
   const [error, setError] = useState("");
   const [exportando, setExportando] = useState(false);
@@ -99,6 +104,18 @@ export function Diario({ store, local, onSalir }: Props) {
         /* sin racha si falla: no es crítico */
       });
   }, [store]);
+
+  useEffect(() => {
+    if (!fotosApi) return;
+    fotosApi
+      .listar()
+      .then(setFotos)
+      .catch((e) => {
+        setFotos([]);
+        setError((e as Error).message || "No se han podido cargar las fotos.");
+      });
+  }, [fotosApi]);
+  const avisoFotos = fotos ? recordatorioFotos(fotos) : null;
 
   function actualizarDia(f: string, cambios: Dia) {
     const s = semanaRef.current;
@@ -220,6 +237,7 @@ export function Diario({ store, local, onSalir }: Props) {
                 }}
               >
                 <span className="dia-letra">{DIAS_CORTOS[i]}</span>
+                {avisoFotos?.proxima === f && <span className="marca-fotos" title="Toca sacar fotos">📷</span>}
                 <span className={`dia-num ${estadoAnillo(f, semana?.dias[f])}`} style={{ ["--pct" as string]: pct }}>
                   {parseISO(f).getDate()}
                 </span>
@@ -230,10 +248,30 @@ export function Diario({ store, local, onSalir }: Props) {
       </div>
 
       <main className="contenido">
-        {!semana ? (
+        {vista === "fotos" ? (
+          <FotosVista
+            api={fotosApi}
+            fotos={fotosApi ? fotos : []}
+            onCambio={setFotos}
+            onError={setError}
+            ocultas={fotosOcultas}
+            onOcultas={setFotosOcultas}
+          />
+        ) : !semana ? (
           <p className="cargando">Cargando…</p>
         ) : vista === "dia" ? (
           <>
+            {avisoFotos?.toca && fecha === hoy() && (
+              <button className="aviso-fotos" onClick={() => setVista("fotos")}>
+                <span aria-hidden>📸</span>
+                <span>
+                  <strong>Toca sacar fotos</strong>
+                  <br />
+                  Han pasado {avisoFotos.dias} días desde las últimas ({fechaCorta(avisoFotos.ultima)}).
+                </span>
+                <span aria-hidden>›</span>
+              </button>
+            )}
             <h2 className="titulo-dia">
               {fechaLarga(fecha)}
               <span className="insignias">
@@ -268,6 +306,10 @@ export function Diario({ store, local, onSalir }: Props) {
         </button>
         <button className={vista === "semana" ? "activa" : ""} onClick={() => setVista("semana")}>
           <span aria-hidden>📊</span> Semana
+        </button>
+        <button className={vista === "fotos" ? "activa" : ""} onClick={() => setVista("fotos")}>
+          <span aria-hidden>📷</span> Fotos
+          {avisoFotos?.toca && <span className="punto" aria-label="Toca sacar fotos" />}
         </button>
       </nav>
     </div>
