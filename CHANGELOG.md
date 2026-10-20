@@ -4,6 +4,15 @@ Formato: [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) · versione
 
 ## [Sin publicar]
 
+## [1.1.0] - 2026-10-20
+
+### Cambiado
+- **Acceso solo por invitación**: la pantalla de acceso ya no permite crear cuentas y explica que hay que
+  pedir una invitación. Las invitaciones se envían desde Supabase → Authentication → Users → Invite user.
+
+### Añadido
+- Al abrir el enlace del correo de invitación, la app pide primero **«Elige tu contraseña»** y después entra.
+
 ## [1.0.2] - 2026-10-09
 
 ### Añadido
