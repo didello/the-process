@@ -4,6 +4,13 @@ Formato: [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) · versione
 
 ## [Sin publicar]
 
+## [1.1.4] - 2026-10-20
+
+### Corregido
+- La app instalada (sobre todo en iPhone) seguía con la versión anterior después de publicar una nueva, y
+  al exportar a Excel fallaba con «Importing a module script failed». Ahora busca versión nueva al abrirse
+  y al volver a ella, y se recarga sola cuando la encuentra.
+
 ## [1.1.3] - 2026-10-20
 
 ### Corregido
