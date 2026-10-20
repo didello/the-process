@@ -16,21 +16,14 @@ export const supabase =
 //
 // Con el de invitación también se entra sin contraseña. No basta con mirar el enlace:
 // si el navegador tenía guardada una versión anterior de la app, esa versión lo usa y
-// luego se recarga sola. Por eso miramos la propia sesión: Supabase apunta en ella
-// cómo se entró ("invite"). Hasta que la persona elige contraseña (y lo marcamos en
-// sus datos con clave_elegida), la app se la pide cada vez que se abre.
+// luego se recarga sola. Por eso miramos la cuenta: si fue invitada (Supabase guarda
+// invited_at) y la persona aún no ha elegido contraseña (lo marcamos en sus datos con
+// clave_elegida), la app se la pide cada vez que se abre.
 
 /** Marca que se guarda en los datos de la persona al elegir contraseña. */
 export const CLAVE_ELEGIDA = "clave_elegida";
 
-function entroPorInvitacion(s: Session) {
-  try {
-    const datos = JSON.parse(atob(s.access_token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")));
-    return Array.isArray(datos.amr) && datos.amr.some((a: { method?: string }) => a?.method === "invite");
-  } catch {
-    return false;
-  }
-}
+const faltaClaveDeInvitacion = (s: Session) => !!s.user.invited_at && !s.user.user_metadata?.[CLAVE_ELEGIDA];
 
 let enRecuperacion = false;
 let esInvitacion = false;
@@ -41,7 +34,7 @@ supabase?.auth.onAuthStateChange((evento, sesion) => {
   if (evento === "PASSWORD_RECOVERY") {
     enRecuperacion = true;
     avisar();
-  } else if (sesion && !enRecuperacion && entroPorInvitacion(sesion) && !sesion.user.user_metadata?.[CLAVE_ELEGIDA]) {
+  } else if (sesion && !enRecuperacion && faltaClaveDeInvitacion(sesion)) {
     enRecuperacion = esInvitacion = true;
     avisar();
   }
