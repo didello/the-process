@@ -31,7 +31,7 @@ export default function App() {
   if (sesion === undefined) return <p className="cargando">Cargando…</p>;
   if (!sesion) return <Acceso sb={supabase} />;
   if (cambiandoContrasena)
-    return <NuevaContrasena sb={supabase} onHecho={recuperacion.terminar} titulo={recuperacion.invitacion ? "Elige tu contraseña" : undefined} />;
+    return <NuevaContrasena sb={supabase} onHecho={recuperacion.terminar} titulo={recuperacion.invitacion() ? "Elige tu contraseña" : undefined} />;
   if (cambiarDesdeMenu)
     return <NuevaContrasena sb={supabase} onHecho={() => setCambiarDesdeMenu(false)} onCancelar={() => setCambiarDesdeMenu(false)} />;
   return (
