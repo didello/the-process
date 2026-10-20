@@ -93,3 +93,118 @@ drop policy if exists "fotos: borrar las mias" on storage.objects;
 create policy "fotos: borrar las mias" on storage.objects
   for delete to authenticated
   using (bucket_id = 'fotos' and (storage.foldername(name))[1] = (select auth.uid())::text);
+
+-- ============================================================
+-- Pasos desde el iPhone (v1.2): un Atajo lee los pasos de Salud y los apunta.
+-- El Atajo no usa la contraseña: cada persona genera en la app una "clave del atajo"
+-- que solo sirve para apuntar pasos. Aquí se guarda su huella (sha256), nunca la clave.
+-- ============================================================
+
+create table if not exists public.claves_atajo (
+  user_id    uuid primary key references auth.users (id) on delete cascade,
+  hash       text not null unique,
+  creada     timestamptz not null default now(),
+  ultimo_uso timestamptz
+);
+
+revoke all on public.claves_atajo from anon, authenticated;
+grant select (user_id, creada, ultimo_uso) on public.claves_atajo to authenticated;
+alter table public.claves_atajo enable row level security;
+
+drop policy if exists "clave del atajo propia" on public.claves_atajo;
+create policy "clave del atajo propia" on public.claves_atajo
+  for select to authenticated
+  using ((select auth.uid()) = user_id);
+
+-- Genera una clave nueva (anula la anterior) y la devuelve. Solo se ve esta vez.
+create or replace function public.nueva_clave_atajo()
+returns text
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  uid   uuid := auth.uid();
+  clave text;
+begin
+  if uid is null then
+    raise exception 'Hace falta iniciar sesión.';
+  end if;
+  clave := replace(gen_random_uuid()::text || gen_random_uuid()::text, '-', '');
+  insert into public.claves_atajo (user_id, hash)
+  values (uid, encode(sha256(convert_to(clave, 'UTF8')), 'hex'))
+  on conflict (user_id) do update set hash = excluded.hash, creada = now(), ultimo_uso = null;
+  return clave;
+end;
+$$;
+
+create or replace function public.anular_clave_atajo()
+returns void
+language sql
+security definer
+set search_path = ''
+as $$
+  delete from public.claves_atajo where user_id = auth.uid();
+$$;
+
+revoke all on function public.nueva_clave_atajo() from public, anon;
+revoke all on function public.anular_clave_atajo() from public, anon;
+grant execute on function public.nueva_clave_atajo() to authenticated;
+grant execute on function public.anular_clave_atajo() to authenticated;
+
+-- Lo que llama el Atajo: POST /rest/v1/rpc/apuntar_pasos con {"clave", "fecha", "pasos"}.
+-- Convierte los pasos en la opción de la hoja del entrenador y la apunta en ese día.
+-- Nunca baja lo que ya hay: si marcaste a mano más pasos, o el Atajo ya envió más ese día,
+-- se queda lo de más. Devuelve la opción que queda guardada.
+create or replace function public.apuntar_pasos(clave text, fecha date, pasos numeric)
+returns text
+language plpgsql
+security definer
+set search_path = ''
+as $$
+#variable_conflict use_column
+declare
+  -- Mismo orden y textos que src/config/campos.ts
+  opciones constant text[] := array['0-3k', '3-5k', '5-8k', '8-10k', '10-12k', '12-15k', '> de 15k'];
+  uid    uuid;
+  nueva  text;
+  actual text;
+begin
+  select c.user_id into uid
+  from public.claves_atajo c
+  where c.hash = encode(sha256(convert_to(coalesce(apuntar_pasos.clave, ''), 'UTF8')), 'hex');
+  if uid is null then
+    raise exception 'La clave del atajo no es válida. Genera una nueva en The Process (Cuenta).';
+  end if;
+  if apuntar_pasos.fecha is null or apuntar_pasos.fecha > current_date + 1 or apuntar_pasos.fecha < current_date - 7 then
+    raise exception 'Solo se pueden apuntar pasos de los últimos 7 días.';
+  end if;
+  if apuntar_pasos.pasos is null or apuntar_pasos.pasos < 0 or apuntar_pasos.pasos > 200000 then
+    raise exception 'Número de pasos no válido.';
+  end if;
+
+  nueva := case
+    when apuntar_pasos.pasos < 3000 then opciones[1]
+    when apuntar_pasos.pasos < 5000 then opciones[2]
+    when apuntar_pasos.pasos < 8000 then opciones[3]
+    when apuntar_pasos.pasos < 10000 then opciones[4]
+    when apuntar_pasos.pasos < 12000 then opciones[5]
+    when apuntar_pasos.pasos < 15000 then opciones[6]
+    else opciones[7]
+  end;
+
+  select d.pasos into actual from public.dias d where d.user_id = uid and d.fecha = apuntar_pasos.fecha;
+  if actual is null or coalesce(array_position(opciones, actual), 0) < array_position(opciones, nueva) then
+    insert into public.dias (user_id, fecha, pasos)
+    values (uid, apuntar_pasos.fecha, nueva)
+    on conflict (user_id, fecha) do update set pasos = excluded.pasos, updated_at = now();
+    actual := nueva;
+  end if;
+
+  update public.claves_atajo set ultimo_uso = now() where user_id = uid;
+  return actual;
+end;
+$$;
+
+revoke all on function public.apuntar_pasos(text, date, numeric) from public;
+grant execute on function public.apuntar_pasos(text, date, numeric) to anon, authenticated;

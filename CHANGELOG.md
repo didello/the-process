@@ -4,6 +4,12 @@ Formato: [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) · versione
 
 ## [Sin publicar]
 
+### Añadido
+- **Pasos desde el iPhone** (Cuenta ▾): un Atajo del iPhone lee los pasos de Salud (los que enseña Fitness) y los
+  apunta solo en el día, con la opción de la hoja (`0-3k` … `+15k`). Cada persona genera su **clave del atajo**,
+  que solo sirve para apuntar pasos y se puede anular. Nunca baja lo que ya hay apuntado.
+- Al volver a la app, la semana se recarga para enseñar lo que haya apuntado el Atajo.
+
 ## [1.1.4] - 2026-10-20
 
 ### Corregido

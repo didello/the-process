@@ -17,6 +17,7 @@ interface Props {
   local: boolean;
   onSalir?: () => void;
   onCambiarContrasena?: () => void;
+  onPasosAtajo?: () => void;
   fotosApi: FotosApi | null;
 }
 
@@ -40,7 +41,7 @@ function calcularRacha(dias: Record<string, Dia>) {
 
 const DIAS_RACHA = 730; // hasta dónde miramos hacia atrás para la racha
 
-export function Diario({ store, local, onSalir, onCambiarContrasena, fotosApi }: Props) {
+export function Diario({ store, local, onSalir, onCambiarContrasena, onPasosAtajo, fotosApi }: Props) {
   const [menuCuenta, setMenuCuenta] = useState(false);
   const [fecha, setFecha] = useState(hoy());
   const lunes = lunesDe(fecha);
@@ -93,8 +94,20 @@ export function Diario({ store, local, onSalir, onCambiarContrasena, fotosApi }:
         setError((e as Error).message || "No se ha podido cargar la semana.");
         fijarSemana(lunes, { dias: {}, comentarios: "" });
       });
+    // Al volver a la app, recarga la semana: el Atajo del iPhone puede haber apuntado pasos.
+    const alVolver = () => {
+      if (document.visibilityState !== "visible" || pendientes.current > 0) return;
+      store
+        .cargarSemana(lunes)
+        .then((s) => vivo && pendientes.current === 0 && fijarSemana(lunes, s))
+        .catch(() => {
+          /* se queda lo que había */
+        });
+    };
+    document.addEventListener("visibilitychange", alVolver);
     return () => {
       vivo = false;
+      document.removeEventListener("visibilitychange", alVolver);
     };
   }, [store, lunes]);
 
@@ -209,6 +222,11 @@ export function Diario({ store, local, onSalir, onCambiarContrasena, fotosApi }:
                 <>
                   <div className="menu-fondo" onClick={() => setMenuCuenta(false)} />
                   <div className="menu tarjeta" role="menu">
+                    {onPasosAtajo && (
+                      <button role="menuitem" onClick={onPasosAtajo}>
+                        👟 Pasos desde el iPhone
+                      </button>
+                    )}
                     {onCambiarContrasena && (
                       <button role="menuitem" onClick={onCambiarContrasena}>
                         🔑 Cambiar contraseña
