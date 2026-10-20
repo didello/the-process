@@ -4,6 +4,13 @@ Formato: [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) · versione
 
 ## [Sin publicar]
 
+## [1.1.1] - 2026-10-20
+
+### Corregido
+- Invitaciones: si el navegador tenía guardada una versión anterior de la app, el enlace del correo entraba
+  directamente sin pedir contraseña. Ahora la app reconoce que se entró por invitación y pide
+  **«Elige tu contraseña»** cada vez que se abre, hasta que se elige.
+
 ## [1.1.0] - 2026-10-20
 
 ### Cambiado

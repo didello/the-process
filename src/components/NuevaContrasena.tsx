@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { CLAVE_ELEGIDA } from "../lib/supabase";
 
 /** También sirve para cambiarla estando dentro (con onCancelar para volver a la app). */
 export function NuevaContrasena({
@@ -25,7 +26,8 @@ export function NuevaContrasena({
     if (pass !== repetir) return setMsg("Las dos contraseñas no coinciden.");
     setOcupado(true);
     setMsg("Un momento…");
-    const { error } = await sb.auth.updateUser({ password: pass });
+    // La marca evita que a quien entró por invitación se le vuelva a pedir.
+    const { error } = await sb.auth.updateUser({ password: pass, data: { [CLAVE_ELEGIDA]: true } });
     setOcupado(false);
     if (error) {
       setMsg(/different from the old/i.test(error.message) ? "La nueva contraseña tiene que ser distinta de la anterior." : error.message);
