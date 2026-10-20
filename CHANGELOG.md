@@ -4,6 +4,12 @@ Formato: [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) · versione
 
 ## [Sin publicar]
 
+## [1.1.3] - 2026-10-20
+
+### Corregido
+- Exportar a Excel fallaba con «Failed to fetch dynamically imported module» si la app abierta era de una
+  versión anterior a la publicada. Ahora la app se recarga sola para coger la versión nueva.
+
 ## [1.1.2] - 2026-10-20
 
 ### Corregido
