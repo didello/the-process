@@ -4,6 +4,12 @@ Formato: [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) · versione
 
 ## [Sin publicar]
 
+## [1.1.2] - 2026-10-20
+
+### Corregido
+- Invitaciones: la 1.1.1 seguía sin pedir la contraseña, porque Supabase no apunta en la sesión que se
+  entró por invitación. Ahora se mira si la cuenta fue invitada y aún no ha elegido contraseña.
+
 ## [1.1.1] - 2026-10-20
 
 ### Corregido
