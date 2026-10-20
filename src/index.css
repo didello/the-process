@@ -521,6 +521,11 @@ textarea {
   font-size: 14px;
   color: var(--texto-suave);
 }
+.acceso-nota {
+  margin: 0;
+  font-size: 13px;
+  color: var(--texto-suave);
+}
 .acceso-enlaces {
   display: flex;
   justify-content: space-between;

@@ -30,7 +30,8 @@ export default function App() {
   if (!supabase) return <Diario store={storeLocal} local fotosApi={null} />;
   if (sesion === undefined) return <p className="cargando">Cargando…</p>;
   if (!sesion) return <Acceso sb={supabase} />;
-  if (cambiandoContrasena) return <NuevaContrasena sb={supabase} onHecho={recuperacion.terminar} />;
+  if (cambiandoContrasena)
+    return <NuevaContrasena sb={supabase} onHecho={recuperacion.terminar} titulo={recuperacion.invitacion ? "Elige tu contraseña" : undefined} />;
   if (cambiarDesdeMenu)
     return <NuevaContrasena sb={supabase} onHecho={() => setCambiarDesdeMenu(false)} onCancelar={() => setCambiarDesdeMenu(false)} />;
   return (

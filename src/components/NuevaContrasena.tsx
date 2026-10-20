@@ -1,10 +1,20 @@
-// Pantalla a la que lleva el enlace del correo "restablecer contraseña".
+// Pantalla a la que llevan los enlaces de los correos "restablecer contraseña" e "invitación".
 
 import { useState, type FormEvent } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 /** También sirve para cambiarla estando dentro (con onCancelar para volver a la app). */
-export function NuevaContrasena({ sb, onHecho, onCancelar }: { sb: SupabaseClient; onHecho(): void; onCancelar?: () => void }) {
+export function NuevaContrasena({
+  sb,
+  onHecho,
+  onCancelar,
+  titulo = "Nueva contraseña",
+}: {
+  sb: SupabaseClient;
+  onHecho(): void;
+  onCancelar?: () => void;
+  titulo?: string;
+}) {
   const [pass, setPass] = useState("");
   const [repetir, setRepetir] = useState("");
   const [msg, setMsg] = useState("");
@@ -33,7 +43,7 @@ export function NuevaContrasena({ sb, onHecho, onCancelar }: { sb: SupabaseClien
         <h1 className="firma">The Process</h1>
       </div>
       <form className="tarjeta acceso-form" onSubmit={enviar}>
-        <h2>Nueva contraseña</h2>
+        <h2>{titulo}</h2>
         <input
           type="password"
           placeholder="Nueva contraseña"
