@@ -4,6 +4,11 @@ Formato: [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) · versione
 
 ## [Sin publicar]
 
+### Añadido
+- **Pasos exactos**: el Atajo del iPhone guarda también el número de pasos. La app lo enseña en el día
+  («8.758 pasos según el iPhone») y el Excel añade la fila **PASOS (EXACTOS)** debajo de la de rangos del entrenador.
+  Requiere ejecutar la última versión de `supabase/schema.sql`.
+
 ## [1.2.1] - 2026-10-21
 
 ### Corregido

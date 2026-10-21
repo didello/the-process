@@ -1,5 +1,6 @@
 // Genera el Excel de la semana con el mismo aspecto que la hoja del entrenador:
-// tabla de objetivos (C7:J16), comentarios debajo y una pestaña con los pesos.
+// tabla de objetivos (C7:J16), una fila con los pasos exactos del iPhone, comentarios debajo
+// y una pestaña con los pesos.
 
 import type { Borders, Cell, Worksheet } from "exceljs";
 import { CAMPOS } from "../config/campos";
@@ -66,8 +67,22 @@ function hojaRevision(ws: Worksheet, lunes: string, semana: Semana) {
     });
   });
 
+  // Pasos exactos (los que envía el Atajo del iPhone), debajo de la fila de rangos del entrenador.
+  const filaPasos = ws.getRow(8 + CAMPOS.length);
+  filaPasos.height = 26;
+  const etPasos = filaPasos.getCell(3);
+  etPasos.value = "PASOS (EXACTOS)";
+  pintar(etPasos, NEGRO, BLANCO, true, 10);
+  fechas.forEach((f, i) => {
+    const c = filaPasos.getCell(4 + i);
+    c.value = semana.dias[f]?.pasos_exactos ?? null;
+    c.numFmt = "#,##0";
+    pintar(c, AMARILLO);
+    c.alignment = { vertical: "bottom", horizontal: "right" };
+  });
+
   // Comentarios
-  const filaCom = 8 + CAMPOS.length;
+  const filaCom = 9 + CAMPOS.length;
   ws.mergeCells(filaCom, 3, filaCom, 10);
   const cabCom = ws.getCell(filaCom, 3);
   cabCom.value = "COMENTARIOS ADICIONALES";

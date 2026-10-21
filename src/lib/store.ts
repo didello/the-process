@@ -5,7 +5,8 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { CAMPOS, type CampoId } from "../config/campos";
 import { diasDeSemana, sumarDias } from "./fechas";
 
-export type Dia = Partial<Record<CampoId, string | null>> & { peso?: number | null };
+/** pasos_exactos lo escribe solo el Atajo del iPhone (ver supabase/schema.sql); la app lo lee. */
+export type Dia = Partial<Record<CampoId, string | null>> & { peso?: number | null; pasos_exactos?: number | null };
 
 export interface Semana {
   dias: Record<string, Dia>; // por fecha ISO
@@ -27,6 +28,7 @@ function limpiar(fila: Record<string, unknown>): Dia {
   const dia: Dia = {};
   for (const id of IDS) dia[id] = (fila[id] as string | null) ?? null;
   dia.peso = fila.peso == null ? null : Number(fila.peso);
+  dia.pasos_exactos = fila.pasos_exactos == null ? null : Number(fila.pasos_exactos);
   return dia;
 }
 
@@ -57,9 +59,11 @@ export function storeSupabase(sb: SupabaseClient, userId: string): Store {
       return Object.fromEntries(data.map((fila) => [fila.fecha, limpiar(fila)]));
     },
     async guardarDia(fecha, dia) {
+      // pasos_exactos no se envía: lo escribe el Atajo y podría pisarse con un valor viejo.
+      const { pasos_exactos: _, ...campos } = dia;
       const { error } = await sb
         .from("dias")
-        .upsert({ user_id: userId, fecha, ...dia, updated_at: new Date().toISOString() }, { onConflict: "user_id,fecha" });
+        .upsert({ user_id: userId, fecha, ...campos, updated_at: new Date().toISOString() }, { onConflict: "user_id,fecha" });
       if (error) throw error;
     },
     async guardarComentarios(lunes, texto) {

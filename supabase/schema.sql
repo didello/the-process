@@ -152,6 +152,10 @@ revoke all on function public.anular_clave_atajo() from public, anon;
 grant execute on function public.nueva_clave_atajo() to authenticated;
 grant execute on function public.anular_clave_atajo() to authenticated;
 
+-- Pasos exactos del día, tal y como los envía el Atajo (la columna "pasos" guarda el rango
+-- de la hoja del entrenador). Solo lo escribe apuntar_pasos; la app lo enseña y lo exporta.
+alter table public.dias add column if not exists pasos_exactos integer;
+
 -- Registro de lo que envía el Atajo, tal cual llega y con el error si lo hubo, para ver qué
 -- pasa si algo no cuadra. Se guardan 30 días.
 create table if not exists public.envios_atajo (
@@ -181,7 +185,8 @@ create policy "envios del atajo propios" on public.envios_atajo
 -- Lo que llama el Atajo: POST /rest/v1/rpc/apuntar_pasos con {"clave", "fecha", "pasos"}.
 -- Convierte los pasos en la opción de la hoja del entrenador y la apunta en ese día.
 -- Nunca baja lo que ya hay: si marcaste a mano más pasos, o el Atajo ya envió más ese día,
--- se queda lo de más. Devuelve la opción que queda guardada, o el motivo si no se pudo.
+-- se queda lo de más. También guarda el número exacto (el mayor recibido ese día).
+-- Devuelve la opción que queda guardada, o el motivo si no se pudo.
 -- Recibe texto para aceptar lo que mande el iPhone (por ejemplo "8.778" o "8,778") y
 -- poder apuntar en el registro lo que llegó aunque no sea válido.
 drop function if exists public.apuntar_pasos(text, date, numeric);
@@ -257,11 +262,14 @@ begin
 
   select d.pasos into actual from public.dias d where d.user_id = uid and d.fecha = dia;
   if actual is null or coalesce(array_position(opciones, actual), 0) < array_position(opciones, nueva) then
-    insert into public.dias (user_id, fecha, pasos)
-    values (uid, dia, nueva)
-    on conflict (user_id, fecha) do update set pasos = excluded.pasos, updated_at = now();
     actual := nueva;
   end if;
+  insert into public.dias (user_id, fecha, pasos, pasos_exactos)
+  values (uid, dia, actual, round(num)::integer)
+  on conflict (user_id, fecha) do update
+    set pasos = excluded.pasos,
+        pasos_exactos = greatest(coalesce(public.dias.pasos_exactos, 0), excluded.pasos_exactos),
+        updated_at = now();
 
   insert into public.envios_atajo (user_id, fecha, pasos, opcion) values (uid, apuntar_pasos.fecha, apuntar_pasos.pasos, actual);
   return actual;

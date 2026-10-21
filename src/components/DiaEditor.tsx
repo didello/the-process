@@ -28,6 +28,9 @@ export function DiaEditor({ dia, onCampo, onPeso, onCopiarAnterior }: Props) {
             <h3>
               <span aria-hidden>{campo.icono}</span> {campo.titulo}
               {campo.opcional && <small> · opcional</small>}
+              {campo.id === "pasos" && dia.pasos_exactos != null && (
+                <small> · {dia.pasos_exactos.toLocaleString("es-ES")} pasos según el iPhone</small>
+              )}
             </h3>
             <div className="opciones" role="radiogroup" aria-label={campo.titulo}>
               {campo.opciones.map((op) => {
