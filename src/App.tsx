@@ -3,6 +3,7 @@ import type { Session } from "@supabase/supabase-js";
 import { Acceso } from "./components/Acceso";
 import { Diario } from "./components/Diario";
 import { NuevaContrasena } from "./components/NuevaContrasena";
+import { PasosAtajo } from "./components/PasosAtajo";
 import { storeLocal, storeSupabase } from "./lib/store";
 import { fotosSupabase } from "./lib/fotos";
 import { recuperacion, supabase } from "./lib/supabase";
@@ -22,6 +23,7 @@ export default function App() {
   const cambiandoContrasena = useSyncExternalStore(recuperacion.escuchar, recuperacion.activa);
   // O la cambias tú desde el menú Cuenta.
   const [cambiarDesdeMenu, setCambiarDesdeMenu] = useState(false);
+  const [verAtajo, setVerAtajo] = useState(false);
 
   const userId = sesion?.user.id;
   const store = useMemo(() => (supabase && userId ? storeSupabase(supabase, userId) : storeLocal), [userId]);
@@ -31,9 +33,16 @@ export default function App() {
   if (sesion === undefined) return <p className="cargando">Cargando…</p>;
   if (!sesion) return <Acceso sb={supabase} />;
   if (cambiandoContrasena)
-    return <NuevaContrasena sb={supabase} onHecho={recuperacion.terminar} titulo={recuperacion.invitacion() ? "Elige tu contraseña" : undefined} />;
+    return (
+      <NuevaContrasena
+        sb={supabase}
+        onHecho={recuperacion.terminar}
+        titulo={recuperacion.invitacion() ? "Elige tu contraseña" : undefined}
+      />
+    );
   if (cambiarDesdeMenu)
     return <NuevaContrasena sb={supabase} onHecho={() => setCambiarDesdeMenu(false)} onCancelar={() => setCambiarDesdeMenu(false)} />;
+  if (verAtajo) return <PasosAtajo sb={supabase} onVolver={() => setVerAtajo(false)} />;
   return (
     <Diario
       key={userId}
@@ -42,6 +51,7 @@ export default function App() {
       fotosApi={fotosApi}
       onSalir={() => supabase!.auth.signOut()}
       onCambiarContrasena={() => setCambiarDesdeMenu(true)}
+      onPasosAtajo={() => setVerAtajo(true)}
     />
   );
 }

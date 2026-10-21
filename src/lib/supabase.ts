@@ -9,6 +9,9 @@ const key = import.meta.env.VITE_SUPABASE_KEY as string | undefined;
 export const supabase =
   url && key ? createClient(url, key, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } }) : null;
 
+/** Lo que necesita el Atajo del iPhone para apuntar los pasos (ver supabase/schema.sql). */
+export const atajo = { url: url ? `${url}/rest/v1/rpc/apuntar_pasos` : "", apikey: key ?? "" };
+
 // ---------- Recuperación de contraseña e invitaciones ----------
 // Al abrir el enlace del correo "restablecer contraseña", Supabase inicia sesión
 // y avisa con PASSWORD_RECOVERY. Nos suscribimos aquí, nada más crear el cliente,
