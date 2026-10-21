@@ -4,6 +4,11 @@ Formato: [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) · versione
 
 ## [Sin publicar]
 
+### Corregido
+- Pasos desde el iPhone: el atajo sumaba los pasos del reloj y del iPhone y, fuera de la hora universal, ponía a cada
+  día la fecha del siguiente. Las instrucciones ahora leen solo el Apple Watch y solo hoy, con la fecha del iPhone.
+- `apuntar_pasos` acepta pasos con separador de miles y apunta en `envios_atajo` cada envío, también los que fallan.
+
 ## [1.2.0] - 2026-10-21
 
 ### Añadido

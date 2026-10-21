@@ -126,18 +126,20 @@ export function PasosAtajo({ sb, onVolver }: { sb: SupabaseClient; onVolver(): v
         <ol className="atajo-pasos">
           <li>
             <b>Buscar muestras de salud</b> <i>(Find Health Samples)</i>. Si pide permiso, pulsa <b>Permitir acceso</b> y activa Pasos. Debe
-            quedar <b>Tipo es Pasos</b> <i>(Type is Steps)</i>. Añade un filtro y déjalo en{" "}
-            <b>Fecha de inicio está en los últimos 2 días</b> <i>(Start Date is in the last 2 days)</i>. Debajo: <b>Agrupar por: Día</b>{" "}
-            <i>(Group By: Day)</i> y el <b>Límite</b> <i>(Limit)</i> <b>desactivado</b>.
+            quedar <b>Tipo es Pasos</b> <i>(Type is Steps)</i>. Añade un filtro <b>Fecha de inicio es hoy</b> <i>(Start Date is today)</i> y
+            otro <b>Fuente es</b> <i>(Source is)</i> tu <b>Apple Watch</b> (si no tienes reloj, tu iPhone): así no se suman los pasos del
+            reloj y del iPhone, y salen los mismos que en Fitness. Debajo: <b>Agrupar por: Año</b> <i>(Group By: Year)</i>, para que dé un
+            solo total (por día, el iPhone parte el día en dos si no vives en hora universal), y el <b>Límite</b> <i>(Limit)</i>{" "}
+            <b>desactivado</b>.
           </li>
           <li>
             <b>Repetir con cada</b> <i>(Repeat with Each)</i>. Ojo: no «Repetir» a secas. Las dos acciones siguientes tienen que quedar{" "}
             <b>dentro</b>, entre «Repetir con cada» y «Fin de la repetición» <i>(End Repeat)</i>: si aparecen debajo, arrástralas.
             <ol>
               <li>
-                <b>Formatear fecha</b> <i>(Format Date)</i>: toca la fecha y elige <b>Elemento de repetición</b> <i>(Repeat Item)</i>;
-                vuelve a tocarlo y elige <b>Fecha de inicio</b> <i>(Start Date)</i>. En formato de fecha <i>(Date Format)</i> elige{" "}
-                <b>Personalizado</b> <i>(Custom)</i> y escribe <code>yyyy-MM-dd</code>.
+                <b>Formatear fecha</b> <i>(Format Date)</i>: la fecha tiene que ser <b>Fecha actual</b> <i>(Current Date)</i>; si pone otra
+                cosa, tócala, elige <b>Borrar</b> <i>(Clear)</i> y escoge Fecha actual encima del teclado. En formato de fecha{" "}
+                <i>(Date Format)</i> elige <b>Personalizado</b> <i>(Custom)</i> y escribe <code>yyyy-MM-dd</code>.
               </li>
               <li>
                 <b>Obtener contenido de URL</b> <i>(Get Contents of URL)</i>. Atajos rellena la dirección sola con la fecha: bórrala y pega
@@ -163,9 +165,9 @@ export function PasosAtajo({ sb, onVolver }: { sb: SupabaseClient; onVolver(): v
         <Copiable etiqueta="Dirección (URL)" valor={atajo.url} />
         <Copiable etiqueta="Encabezado apikey" valor={atajo.apikey} />
         <p className="aviso">
-          Pruébalo con ▶︎. Si todo va bien, la respuesta es la opción apuntada (por ejemplo <code>10-12k</code>). Si sale un mensaje con
-          «invalid input syntax for type date», hay dos fechas en el campo <code>fecha</code>; si sale «connection was lost», revisa que no
-          haya encabezados vacíos.
+          Pruébalo con ▶︎. Si todo va bien, la respuesta es la opción apuntada (por ejemplo <code>10-12k</code>). Si sale «Error: La fecha
+          tiene que ser aaaa-mm-dd», revisa el campo <code>fecha</code> (una sola Fecha formateada); si sale «connection was lost», revisa
+          que no haya encabezados vacíos.
         </p>
       </section>
 
@@ -173,7 +175,8 @@ export function PasosAtajo({ sb, onVolver }: { sb: SupabaseClient; onVolver(): v
         <h2>3. Que se ejecute solo</h2>
         <p className="aviso">
           Con el iPhone bloqueado, Apple no deja leer Salud. Por eso se lanza al abrir una app que uses a diario (el móvil ya está
-          desbloqueado). Envía los últimos días, así que si una vez no se ejecuta, la siguiente lo completa.
+          desbloqueado). Envía los pasos de hoy: si caminas después de la última vez que abres esas apps, abre una antes de dormir para que
+          se apunte el día entero.
         </p>
         <ol className="atajo-pasos">
           <li>
