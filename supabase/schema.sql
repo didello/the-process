@@ -152,6 +152,25 @@ revoke all on function public.anular_clave_atajo() from public, anon;
 grant execute on function public.nueva_clave_atajo() to authenticated;
 grant execute on function public.anular_clave_atajo() to authenticated;
 
+-- Registro de lo que envía el Atajo (para ver qué llega si algo no cuadra). Se guardan 30 días.
+create table if not exists public.envios_atajo (
+  id       bigint generated always as identity primary key,
+  user_id  uuid not null references auth.users (id) on delete cascade,
+  fecha    date,
+  pasos    numeric,
+  opcion   text,
+  recibido timestamptz not null default now()
+);
+
+revoke all on public.envios_atajo from anon, authenticated;
+grant select on public.envios_atajo to authenticated;
+alter table public.envios_atajo enable row level security;
+
+drop policy if exists "envios del atajo propios" on public.envios_atajo;
+create policy "envios del atajo propios" on public.envios_atajo
+  for select to authenticated
+  using ((select auth.uid()) = user_id);
+
 -- Lo que llama el Atajo: POST /rest/v1/rpc/apuntar_pasos con {"clave", "fecha", "pasos"}.
 -- Convierte los pasos en la opción de la hoja del entrenador y la apunta en ese día.
 -- Nunca baja lo que ya hay: si marcaste a mano más pasos, o el Atajo ya envió más ese día,
@@ -202,6 +221,8 @@ begin
   end if;
 
   update public.claves_atajo set ultimo_uso = now() where user_id = uid;
+  insert into public.envios_atajo (user_id, fecha, pasos, opcion) values (uid, apuntar_pasos.fecha, apuntar_pasos.pasos, actual);
+  delete from public.envios_atajo where user_id = uid and recibido < now() - interval '30 days';
   return actual;
 end;
 $$;
