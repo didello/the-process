@@ -119,31 +119,41 @@ export function PasosAtajo({ sb, onVolver }: { sb: SupabaseClient; onVolver(): v
 
       <section className="tarjeta atajo-bloque">
         <h2>2. Crea el atajo</h2>
-        <p className="aviso">En el iPhone, abre la app Atajos → pestaña Atajos → «+». Llámalo «Pasos a The Process» y añade:</p>
+        <p className="aviso">
+          En el iPhone, abre la app <b>Atajos</b> → pestaña Atajos → «+». Entre paréntesis va cómo sale si tu iPhone está en inglés. Añade
+          cada acción desde la barra de búsqueda de abajo, en este orden:
+        </p>
         <ol className="atajo-pasos">
           <li>
-            <b>Buscar muestras de salud</b>: tipo <b>Pasos</b>. Añade el filtro <b>Fecha de inicio · está en los últimos · 2 días</b>.
-            Abajo: <b>Agrupar por: Día</b>, <b>Ordenar por: Fecha de inicio</b>, <b>Más reciente primero</b> y <b>Limitar: 2</b>.
+            <b>Buscar muestras de salud</b> <i>(Find Health Samples)</i>. Si pide permiso, pulsa <b>Permitir acceso</b> y activa Pasos. Debe
+            quedar <b>Tipo es Pasos</b> <i>(Type is Steps)</i>. Añade un filtro y déjalo en{" "}
+            <b>Fecha de inicio está en los últimos 2 días</b> <i>(Start Date is in the last 2 days)</i>. Debajo: <b>Agrupar por: Día</b>{" "}
+            <i>(Group By: Day)</i> y el <b>Límite</b> <i>(Limit)</i> <b>desactivado</b>.
           </li>
           <li>
-            <b>Repetir con cada</b> (las muestras de salud). Dentro de la repetición:
+            <b>Repetir con cada</b> <i>(Repeat with Each)</i>. Ojo: no «Repetir» a secas. Las dos acciones siguientes tienen que quedar{" "}
+            <b>dentro</b>, entre «Repetir con cada» y «Fin de la repetición» <i>(End Repeat)</i>: si aparecen debajo, arrástralas.
             <ol>
               <li>
-                <b>Formatear fecha</b>: toca la fecha, elige <b>Elemento de repetición</b> y luego <b>Fecha de inicio</b>. Formato:{" "}
-                <b>Personalizado</b> con <code>yyyy-MM-dd</code>.
+                <b>Formatear fecha</b> <i>(Format Date)</i>: toca la fecha y elige <b>Elemento de repetición</b> <i>(Repeat Item)</i>;
+                vuelve a tocarlo y elige <b>Fecha de inicio</b> <i>(Start Date)</i>. En formato de fecha <i>(Date Format)</i> elige{" "}
+                <b>Personalizado</b> <i>(Custom)</i> y escribe <code>yyyy-MM-dd</code>.
               </li>
               <li>
-                <b>Obtener contenido de URL</b> con la dirección de abajo. Toca «Mostrar más»: <b>Método: POST</b>. En <b>Encabezados</b>{" "}
-                añade uno con clave <code>apikey</code> y el valor de abajo. En <b>Cuerpo de la solicitud: JSON</b> añade tres campos:
+                <b>Obtener contenido de URL</b> <i>(Get Contents of URL)</i>. Atajos rellena la dirección sola con la fecha: bórrala y pega
+                la <b>Dirección (URL)</b> de abajo. <b>Método: POST</b>. En <b>Encabezados</b> <i>(Headers)</i>, uno solo: clave{" "}
+                <code>apikey</code> y el valor de abajo (borra los vacíos con ⊖). En <b>Cuerpo de la solicitud</b> <i>(Request Body)</i>{" "}
+                elige <b>JSON</b> y añade tres campos:
                 <ul>
                   <li>
-                    <code>clave</code> (Texto): tu clave
+                    <code>clave</code>, tipo Texto <i>(Text)</i>: tu clave.
                   </li>
                   <li>
-                    <code>fecha</code> (Texto): la <b>Fecha formateada</b>
+                    <code>fecha</code>, tipo Texto: <b>Fecha formateada</b> <i>(Formatted Date)</i>, solo una vez.
                   </li>
                   <li>
-                    <code>pasos</code> (Número): <b>Elemento de repetición</b> → <b>Valor</b>
+                    <code>pasos</code>, tipo Número <i>(Number)</i>: borra el 0, elige <b>Elemento de repetición</b> encima del teclado y
+                    luego <b>Valor</b> <i>(Value)</i>. Si sale en rojo, bórralo y vuelve a ponerlo.
                   </li>
                 </ul>
               </li>
@@ -153,30 +163,31 @@ export function PasosAtajo({ sb, onVolver }: { sb: SupabaseClient; onVolver(): v
         <Copiable etiqueta="Dirección (URL)" valor={atajo.url} />
         <Copiable etiqueta="Encabezado apikey" valor={atajo.apikey} />
         <p className="aviso">
-          Pruébalo con ▶︎. La primera vez te pedirá permiso para leer los pasos de Salud: dile que sí. Si todo va bien, la respuesta es la
-          opción apuntada (por ejemplo <code>10-12k</code>).
+          Pruébalo con ▶︎. Si todo va bien, la respuesta es la opción apuntada (por ejemplo <code>10-12k</code>). Si sale un mensaje con
+          «invalid input syntax for type date», hay dos fechas en el campo <code>fecha</code>; si sale «connection was lost», revisa que no
+          haya encabezados vacíos.
         </p>
       </section>
 
       <section className="tarjeta atajo-bloque">
         <h2>3. Que se ejecute solo</h2>
         <p className="aviso">
-          Con el iPhone bloqueado, Apple no deja leer Salud. Por eso es mejor lanzarlo al abrir una app que uses a diario (el móvil ya está
-          desbloqueado). Envía hoy y ayer, así que si una vez falla, la siguiente lo completa.
+          Con el iPhone bloqueado, Apple no deja leer Salud. Por eso se lanza al abrir una app que uses a diario (el móvil ya está
+          desbloqueado). Envía los últimos días, así que si una vez no se ejecuta, la siguiente lo completa.
         </p>
         <ol className="atajo-pasos">
           <li>
-            Atajos → pestaña <b>Automatización</b> → «+» → <b>App</b>.
+            Atajos → pestaña <b>Automatización</b> <i>(Automation)</i> → «+» → <b>App</b>.
           </li>
           <li>
-            Elige <b>Fitness</b> y alguna que abras siempre (WhatsApp, por ejemplo). Marca <b>Se abre</b>.
+            Elige <b>Fitness</b> y alguna que abras siempre (WhatsApp, por ejemplo). Deja marcado <b>Se abre</b> <i>(Is Opened)</i>.
           </li>
           <li>
-            Marca <b>Ejecutar inmediatamente</b> (y desactiva «Notificar al ejecutar» si no quieres el aviso).
+            Marca <b>Ejecutar inmediatamente</b> <i>(Run Immediately)</i>. Si no quieres el aviso, desactiva «Notificar al ejecutar»{" "}
+            <i>(Notify When Run)</i>.
           </li>
-          <li>Siguiente → elige el atajo «Pasos a The Process».</li>
           <li>
-            Opcional: otra automatización de <b>Hora del día</b> (por ejemplo 23:30, a diario) con el mismo atajo.
+            Siguiente <i>(Next)</i> → en <b>Mis atajos</b> <i>(My Shortcuts)</i> toca el atajo que has creado → <b>OK</b> <i>(Done)</i>.
           </li>
         </ol>
       </section>
