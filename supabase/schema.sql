@@ -152,11 +152,40 @@ revoke all on function public.anular_clave_atajo() from public, anon;
 grant execute on function public.nueva_clave_atajo() to authenticated;
 grant execute on function public.anular_clave_atajo() to authenticated;
 
+-- Registro de lo que envía el Atajo, tal cual llega y con el error si lo hubo, para ver qué
+-- pasa si algo no cuadra. Se guardan 30 días.
+create table if not exists public.envios_atajo (
+  id       bigint generated always as identity primary key,
+  user_id  uuid not null references auth.users (id) on delete cascade,
+  fecha    text,
+  pasos    text,
+  opcion   text,
+  error    text,
+  recibido timestamptz not null default now()
+);
+-- La primera versión guardaba fecha y pasos ya convertidos.
+alter table public.envios_atajo
+  alter column fecha type text using fecha::text,
+  alter column pasos type text using pasos::text;
+alter table public.envios_atajo add column if not exists error text;
+
+revoke all on public.envios_atajo from anon, authenticated;
+grant select on public.envios_atajo to authenticated;
+alter table public.envios_atajo enable row level security;
+
+drop policy if exists "envios del atajo propios" on public.envios_atajo;
+create policy "envios del atajo propios" on public.envios_atajo
+  for select to authenticated
+  using ((select auth.uid()) = user_id);
+
 -- Lo que llama el Atajo: POST /rest/v1/rpc/apuntar_pasos con {"clave", "fecha", "pasos"}.
 -- Convierte los pasos en la opción de la hoja del entrenador y la apunta en ese día.
 -- Nunca baja lo que ya hay: si marcaste a mano más pasos, o el Atajo ya envió más ese día,
--- se queda lo de más. Devuelve la opción que queda guardada.
-create or replace function public.apuntar_pasos(clave text, fecha date, pasos numeric)
+-- se queda lo de más. Devuelve la opción que queda guardada, o el motivo si no se pudo.
+-- Recibe texto para aceptar lo que mande el iPhone (por ejemplo "8.778" o "8,778") y
+-- poder apuntar en el registro lo que llegó aunque no sea válido.
+drop function if exists public.apuntar_pasos(text, date, numeric);
+create or replace function public.apuntar_pasos(clave text, fecha text, pasos text)
 returns text
 language plpgsql
 security definer
@@ -167,6 +196,10 @@ declare
   -- Mismo orden y textos que src/config/campos.ts
   opciones constant text[] := array['0-3k', '3-5k', '5-8k', '8-10k', '10-12k', '12-15k', '> de 15k'];
   uid    uuid;
+  dia    date;
+  num    numeric;
+  t      text := btrim(coalesce(apuntar_pasos.pasos, ''));
+  fallo  text;
   nueva  text;
   actual text;
 begin
@@ -176,35 +209,64 @@ begin
   if uid is null then
     raise exception 'La clave del atajo no es válida. Genera una nueva en The Process (Cuenta).';
   end if;
-  if apuntar_pasos.fecha is null or apuntar_pasos.fecha > current_date + 1 or apuntar_pasos.fecha < current_date - 7 then
-    raise exception 'Solo se pueden apuntar pasos de los últimos 7 días.';
+  update public.claves_atajo set ultimo_uso = now() where user_id = uid;
+  delete from public.envios_atajo where user_id = uid and recibido < now() - interval '30 days';
+
+  -- Fecha: aaaa-mm-dd, de los últimos 7 días.
+  begin
+    if btrim(coalesce(apuntar_pasos.fecha, '')) !~ '^\d{4}-\d{2}-\d{2}$' then
+      raise exception 'fecha';
+    end if;
+    dia := btrim(apuntar_pasos.fecha)::date;
+  exception when others then
+    fallo := 'La fecha tiene que ser aaaa-mm-dd (y una sola).';
+  end;
+  if fallo is null and (dia > current_date + 1 or dia < current_date - 7) then
+    fallo := 'Solo se pueden apuntar pasos de los últimos 7 días.';
   end if;
-  if apuntar_pasos.pasos is null or apuntar_pasos.pasos < 0 or apuntar_pasos.pasos > 200000 then
-    raise exception 'Número de pasos no válido.';
+
+  -- Pasos: número, con o sin separador de miles ("8778", "8.778", "8,778", "8778.4").
+  if fallo is null then
+    if t ~ '^\d{1,3}([.,\s]\d{3})+$' then
+      t := regexp_replace(t, '\D', '', 'g');
+    else
+      t := replace(t, ',', '.');
+    end if;
+    if t ~ '^\d+(\.\d+)?$' then
+      num := t::numeric;
+    end if;
+    if num is null or num > 200000 then
+      fallo := 'Los pasos tienen que ser un número.';
+    end if;
+  end if;
+
+  if fallo is not null then
+    insert into public.envios_atajo (user_id, fecha, pasos, error) values (uid, apuntar_pasos.fecha, apuntar_pasos.pasos, fallo);
+    return 'Error: ' || fallo;
   end if;
 
   nueva := case
-    when apuntar_pasos.pasos < 3000 then opciones[1]
-    when apuntar_pasos.pasos < 5000 then opciones[2]
-    when apuntar_pasos.pasos < 8000 then opciones[3]
-    when apuntar_pasos.pasos < 10000 then opciones[4]
-    when apuntar_pasos.pasos < 12000 then opciones[5]
-    when apuntar_pasos.pasos < 15000 then opciones[6]
+    when num < 3000 then opciones[1]
+    when num < 5000 then opciones[2]
+    when num < 8000 then opciones[3]
+    when num < 10000 then opciones[4]
+    when num < 12000 then opciones[5]
+    when num < 15000 then opciones[6]
     else opciones[7]
   end;
 
-  select d.pasos into actual from public.dias d where d.user_id = uid and d.fecha = apuntar_pasos.fecha;
+  select d.pasos into actual from public.dias d where d.user_id = uid and d.fecha = dia;
   if actual is null or coalesce(array_position(opciones, actual), 0) < array_position(opciones, nueva) then
     insert into public.dias (user_id, fecha, pasos)
-    values (uid, apuntar_pasos.fecha, nueva)
+    values (uid, dia, nueva)
     on conflict (user_id, fecha) do update set pasos = excluded.pasos, updated_at = now();
     actual := nueva;
   end if;
 
-  update public.claves_atajo set ultimo_uso = now() where user_id = uid;
+  insert into public.envios_atajo (user_id, fecha, pasos, opcion) values (uid, apuntar_pasos.fecha, apuntar_pasos.pasos, actual);
   return actual;
 end;
 $$;
 
-revoke all on function public.apuntar_pasos(text, date, numeric) from public;
-grant execute on function public.apuntar_pasos(text, date, numeric) to anon, authenticated;
+revoke all on function public.apuntar_pasos(text, text, text) from public;
+grant execute on function public.apuntar_pasos(text, text, text) to anon, authenticated;

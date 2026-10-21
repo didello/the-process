@@ -16,12 +16,13 @@ formato que su hoja de revisión.
 ## Pasos desde el iPhone
 
 Una app web no puede leer Salud (Apple solo lo permite a apps nativas), así que los pasos llegan con un
-**Atajo** del iPhone: lee los pasos de hoy y de ayer y llama a la función `apuntar_pasos` de Supabase
+**Atajo** del iPhone: lee los pasos de hoy del Apple Watch (los mismos que enseña Fitness) y llama a la función `apuntar_pasos` de Supabase
 (`POST /rest/v1/rpc/apuntar_pasos` con `{clave, fecha, pasos}` y el encabezado `apikey`).
 
 - Cada persona genera su clave en **Cuenta ▾ → Pasos desde el iPhone**. En la base de datos solo se guarda
   su huella (sha256); la clave solo sirve para apuntar pasos de esa cuenta y se puede anular.
 - La función convierte los pasos en la opción de la hoja y **nunca baja** lo que ya hay ese día.
+- Cada envío queda en `envios_atajo` (30 días), también los que fallan, con lo que llegó y el motivo.
 - La misma pantalla explica cómo crear el atajo y la automatización.
 
 ## Desarrollo
