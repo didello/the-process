@@ -68,21 +68,25 @@ function hojaRevision(ws: Worksheet, lunes: string, semana: Semana) {
   });
 
   // Pasos exactos (los que envía el Atajo del iPhone), debajo de la fila de rangos del entrenador.
-  const filaPasos = ws.getRow(8 + CAMPOS.length);
-  filaPasos.height = 26;
-  const etPasos = filaPasos.getCell(3);
-  etPasos.value = "PASOS (EXACTOS)";
-  pintar(etPasos, NEGRO, BLANCO, true, 10);
-  fechas.forEach((f, i) => {
-    const c = filaPasos.getCell(4 + i);
-    c.value = semana.dias[f]?.pasos_exactos ?? null;
-    c.numFmt = "#,##0";
-    pintar(c, AMARILLO);
-    c.alignment = { vertical: "bottom", horizontal: "right" };
-  });
+  // Solo si esa semana hay alguno: quien no usa el Atajo no ve una fila vacía.
+  const conPasos = fechas.some((f) => semana.dias[f]?.pasos_exactos != null);
+  if (conPasos) {
+    const filaPasos = ws.getRow(8 + CAMPOS.length);
+    filaPasos.height = 26;
+    const etPasos = filaPasos.getCell(3);
+    etPasos.value = "PASOS (EXACTOS)";
+    pintar(etPasos, NEGRO, BLANCO, true, 10);
+    fechas.forEach((f, i) => {
+      const c = filaPasos.getCell(4 + i);
+      c.value = semana.dias[f]?.pasos_exactos ?? null;
+      c.numFmt = "#,##0";
+      pintar(c, AMARILLO);
+      c.alignment = { vertical: "bottom", horizontal: "right" };
+    });
+  }
 
   // Comentarios
-  const filaCom = 9 + CAMPOS.length;
+  const filaCom = 8 + CAMPOS.length + (conPasos ? 1 : 0);
   ws.mergeCells(filaCom, 3, filaCom, 10);
   const cabCom = ws.getCell(filaCom, 3);
   cabCom.value = "COMENTARIOS ADICIONALES";
