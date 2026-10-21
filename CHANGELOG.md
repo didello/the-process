@@ -4,6 +4,8 @@ Formato: [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) · versione
 
 ## [Sin publicar]
 
+## [1.2.1] - 2026-10-21
+
 ### Corregido
 - Pasos desde el iPhone: el atajo sumaba los pasos del reloj y del iPhone y, fuera de la hora universal, ponía a cada
   día la fecha del siguiente. Las instrucciones ahora leen solo el Apple Watch y solo hoy, con la fecha del iPhone.
